@@ -1,6 +1,6 @@
 package com.ghoul.AmanaFund.security;
 
-import com.ghoul.AmanaFund.user.UserRepository;
+import com.ghoul.AmanaFund.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

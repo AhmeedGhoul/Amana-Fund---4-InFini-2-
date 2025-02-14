@@ -1,7 +1,7 @@
 package com.ghoul.AmanaFund;
 
-import com.ghoul.AmanaFund.role.Role;
-import com.ghoul.AmanaFund.role.RoleRepository;
+import com.ghoul.AmanaFund.entity.Role;
+import com.ghoul.AmanaFund.repository.RoleRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
