@@ -31,12 +31,7 @@ public class SecurityConfig {
                 cors(withDefaults()).
                 csrf(AbstractHttpConfigurer::disable).
                 authorizeHttpRequests(req ->
-                req.requestMatchers(
-                                "/auth/register",
-                                "/auth/authenticate",
-                                "/auth/activate-account"
-                        ).permitAll()
-                        .anyRequest().authenticated()
+                req.requestMatchers("/**").permitAll()
         )
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider)
