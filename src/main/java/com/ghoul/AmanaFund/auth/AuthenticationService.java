@@ -46,12 +46,13 @@ public class AuthenticationService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .accountLocked(false)
-                .enabled(false)
+                .enabled(true)
+                //.enabled(false)
                 .roles(List.of(userRole))
                 .build();
         Users savedUser = userRepository.save(user);
         if (savedUser != null) {
-            sendValidationEmail(savedUser);
+        //    sendValidationEmail(savedUser);
             return true;
         }
         return false;
