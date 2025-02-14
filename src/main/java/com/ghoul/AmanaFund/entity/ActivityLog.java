@@ -24,6 +24,7 @@ public class ActivityLog {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private Users user;
+
     public ActivityLog(LocalDateTime activityDate, String newValue, String oldValue, String activityDescription, String activityName) {
         this.activityDate = activityDate;
         this.newValue = newValue;

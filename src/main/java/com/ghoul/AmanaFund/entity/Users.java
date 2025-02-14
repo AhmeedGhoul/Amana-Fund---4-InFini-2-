@@ -1,5 +1,6 @@
 package com.ghoul.AmanaFund.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -42,18 +43,35 @@ public class Users implements UserDetails, Principal {
     private Boolean enabled;
     private Boolean accountLocked;
 
-    @ManyToMany(fetch = FetchType.EAGER)
-    private List<Role> roles;
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ActivityLog> activityLogs;
     @CreatedDate
     @Column(updatable = false, nullable = false)
     private LocalDate createdDate;
 
     @LastModifiedDate
     @Column(insertable = false)
+    @JsonIgnore
     private LocalDate lastModifiedDate;
-
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Contract> contracts;
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Request> requests;
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Police> polices;
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Agency> agencies;
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Account> accounts;
+    @JsonIgnore
+    @ManyToMany(fetch = FetchType.EAGER)
+    private List<Role> roles;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<ActivityLog> activityLogs;
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.roles.stream().map(role -> new SimpleGrantedAuthority(role.getName())).collect(Collectors.toList());
