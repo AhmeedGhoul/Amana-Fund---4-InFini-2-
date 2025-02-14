@@ -47,7 +47,7 @@ public class AuthenticationService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .accountLocked(false)
-                .enabled(true)
+                .enabled(false)
                 //.enabled(false)
                 .roles(List.of(userRole))
                 .build();
