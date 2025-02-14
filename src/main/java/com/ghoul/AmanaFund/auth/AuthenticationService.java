@@ -20,6 +20,7 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -66,12 +67,13 @@ public class AuthenticationService {
         }
         return false;
     }
-    public void deleteRoleAsignedToUser(String role,String email) throws MessagingException {
+    public void deleteRoleAsignedToUser(String email,String role) throws MessagingException {
         var userRole = roleRepository.findByName(role)
                 // todo - better exception handling
                 .orElseThrow(() -> new IllegalStateException("ROLE USER was not initiated"));
         var userr= userRepository.findByEmail(email).orElseThrow(()->new IllegalStateException("USER NOT FOUND"));
         userr.getRoles().remove(userRole);
+        userRepository.save(userr);
     }
     private void sendValidationEmail(Users user) throws MessagingException {
         var newToken= generateAndSaveActivationToken(user);
@@ -151,13 +153,31 @@ public class AuthenticationService {
     public void deleteUser(Users User) throws MessagingException {
         userRepository.delete(User);
     }
-
+    public Users getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    }
     public void modifyUser(Users User) throws MessagingException {
         var userr= userRepository.findByEmail(User.getEmail()).orElseThrow(()->new IllegalStateException("USER NOT FOUND"));
-        if(userr!=null)
-    userRepository.save(User);
+        if(userr!=null){
+            var updatedUser = Users.builder()
+                    .id(userr.getId())
+                    .email(User.getEmail())
+                    .firstName(User.getFirstName())
+                    .lastName(User.getLastName())
+                    .email(User.getEmail())
+                    .password(passwordEncoder.encode(User.getPassword()))
+                    .accountLocked(userr.getAccountLocked())
+                    .enabled(userr.getEnabled())
+                    .roles(userr.getRoles())
+                    .build();
+        userRepository.save(updatedUser);}
+
     }
     public List<Users> getAllUsers() throws MessagingException {
         return userRepository.findAll();
+    }
+    public Users findUserByEmail(String email) throws MessagingException {
+        return getUserByEmail(email);
     }
 }

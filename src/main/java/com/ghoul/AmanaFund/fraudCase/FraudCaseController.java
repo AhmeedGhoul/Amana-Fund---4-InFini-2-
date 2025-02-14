@@ -1,11 +1,15 @@
 package com.ghoul.AmanaFund.fraudCase;
 
+import com.ghoul.AmanaFund.activityLog.ActivityLog;
 import com.ghoul.AmanaFund.audit.Audit;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("case")
@@ -30,5 +34,11 @@ public class FraudCaseController {
     public ResponseEntity<Audit> DeleteCase(@RequestBody FraudCases fraudCases) {
         service.delete(fraudCases);
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    }
+    @GetMapping("/Case")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    public ResponseEntity<List<FraudCases>> showFraudCases() throws MessagingException {
+        List<FraudCases> fraudCases = service.findAll();
+        return ResponseEntity.ok(fraudCases);
     }
 }

@@ -25,18 +25,18 @@ public class AuthenticationController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegistrationRequest request) throws MessagingException {
     if(service.registerUser(request))
-        actService.save(new ActivityLog(LocalDateTime.now(),"new user","nothing","registring user for first time", "Register User"));
+        actService.save(new ActivityLog("new user","registring user for first time","nothing", "Register User",LocalDateTime.now(),service.findUserByEmail(request.getEmail())));
     else
-        actService.save(new ActivityLog(LocalDateTime.now(),"nothing","nothing","Failed to register user", "Failed Registeration User"));
+        actService.save(new ActivityLog("new user","registring user for first time","nothing", "Register User",LocalDateTime.now(),service.findUserByEmail(request.getEmail())));
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
     @PostMapping("/Promote")
     @ResponseStatus(HttpStatus.ACCEPTED)
     public ResponseEntity<?> grantRole(@Valid @RequestBody GrantRoleRequest grantRoleRequest) throws MessagingException {
         if(service.grantRole(grantRoleRequest.getEmail(),grantRoleRequest.getRole()))
-            actService.save(new ActivityLog(LocalDateTime.now(),"new user","nothing","registring user for first time", "Register User"));
+            actService.save(new ActivityLog("new user","registring user for first time","nothing", "Register User",LocalDateTime.now(),service.findUserByEmail(grantRoleRequest.getEmail())));
         else
-            actService.save(new ActivityLog(LocalDateTime.now(),"nothing","nothing","Failed to register user", "Failed Registeration User"));
+            actService.save(new ActivityLog("new user","registring user for first time","nothing", "Register User",LocalDateTime.now(),service.findUserByEmail(grantRoleRequest.getEmail())));
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
     @PostMapping("/Demote")

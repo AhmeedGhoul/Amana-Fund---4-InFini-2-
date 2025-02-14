@@ -36,6 +36,15 @@ public class ActivityLog {
         this.activityName = activityName;
     }
 
+    public ActivityLog(String activityName, String activityDescription, String oldValue, String newValue, LocalDateTime activityDate, Users user) {
+        this.activityName = activityName;
+        this.activityDescription = activityDescription;
+        this.oldValue = oldValue;
+        this.newValue = newValue;
+        this.activityDate = activityDate;
+        this.user = user;
+    }
+
     public ActivityLog() {
 
     }

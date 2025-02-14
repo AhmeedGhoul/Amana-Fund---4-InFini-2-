@@ -23,6 +23,15 @@ public class AmanaFundApiApplication {
 			if (roleRepository.findByName("USER").isEmpty()) {
 				roleRepository.save(Role.builder().name("USER").build());
 			}
+			if (roleRepository.findByName("ADMIN").isEmpty()) {
+				roleRepository.save(Role.builder().name("ADMIN").build());
+			}
+			if (roleRepository.findByName("AUDITOR").isEmpty()) {
+				roleRepository.save(Role.builder().name("AUDITOR").build());
+			}
+			if (roleRepository.findByName("AGENT").isEmpty()) {
+				roleRepository.save(Role.builder().name("AGENT").build());
+			}
 		};
 	}
 	}
