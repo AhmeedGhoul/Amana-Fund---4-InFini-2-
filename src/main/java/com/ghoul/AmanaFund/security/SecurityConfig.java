@@ -29,13 +29,28 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.
                 cors(withDefaults()).
-                csrf(AbstractHttpConfigurer::disable).
-                authorizeHttpRequests(req ->
-                req.requestMatchers(
-                                "/auth/register",
-                                "/auth/authenticate",
-                                "/auth/activate-account"
-                        ).permitAll()
+                csrf(AbstractHttpConfigurer::disable).authorizeHttpRequests(req -> req
+                        .requestMatchers("/auth/register", "/auth/authenticate", "/auth/activate-account","/auth/Promote").permitAll()
+                        .requestMatchers(
+                                "/ActivityLog/**",
+                                "/AccountPayment/**",
+                                "/Contract/**",
+                                "/case/**",
+                                "/Garantie/**",
+                                "/Payment/**",
+                                "/Police/**",
+                                "/Sinistre/**"
+                        ).hasRole("AUDITOR")
+                        .requestMatchers(
+                                "/AccountPayment/**",
+                                "/Account/**",
+                                "/Agency/**",
+                                "/Contract/**",
+                                "/CreditPool/**",
+                                "/Garantie/**",
+                                "/Request/**"
+                        ).hasRole("AGENT")
+                        .requestMatchers("/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
         )
                 .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))

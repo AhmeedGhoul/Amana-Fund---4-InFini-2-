@@ -1,11 +1,11 @@
 package com.ghoul.AmanaFund.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Setter
 @Entity
@@ -22,6 +22,11 @@ public class Audit {
     private String output;
     private LocalDateTime reviewedDate;
     private AuditType auditType;
-
+    @OneToMany(mappedBy = "audit", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<ActivityLog> activityLogs;
+    @OneToMany(mappedBy = "audit", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<FraudCases> fraudCases;
 
 }

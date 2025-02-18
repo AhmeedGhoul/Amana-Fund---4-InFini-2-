@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 @Getter
 @Builder
 @AllArgsConstructor
+
 public class ActivityLog {
 
 
@@ -24,6 +25,9 @@ public class ActivityLog {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private Users user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "Audit_id", nullable = false)
+    private Audit audit;
 
     public ActivityLog(LocalDateTime activityDate, String newValue, String oldValue, String activityDescription, String activityName) {
         this.activityDate = activityDate;

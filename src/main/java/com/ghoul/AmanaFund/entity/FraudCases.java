@@ -1,8 +1,6 @@
 package com.ghoul.AmanaFund.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -20,4 +18,7 @@ public class FraudCases {
     private CaseType caseType;
     private LocalDateTime detectionDateTime;
     private CaseStatus caseStatus;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "Audit_id", nullable = false)
+    private Audit audit;
 }
