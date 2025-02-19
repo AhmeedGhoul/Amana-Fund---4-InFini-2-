@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,7 +27,6 @@ import java.util.stream.Collectors;
 public class Users implements UserDetails, Principal {
 
     @Id
-    @GeneratedValue
     private Integer id;
 
     private String firstName;
@@ -41,7 +41,7 @@ public class Users implements UserDetails, Principal {
 
     private LocalDate dateOfBirth;
     private Boolean enabled;
-    private Boolean accountLocked;
+    private Boolean accountLocked=true;
 
     @CreatedDate
     @Column(updatable = false, nullable = false)
@@ -68,10 +68,12 @@ public class Users implements UserDetails, Principal {
     private List<Account> accounts;
     @JsonIgnore
     @ManyToMany(fetch = FetchType.EAGER)
-    private List<Role> roles;
+    private List<Role> roles = new ArrayList<>();  // Initialize to an empty list
+
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
-    private List<ActivityLog> activityLogs;
+    private List<ActivityLog> activityLogs= new ArrayList<>();
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.roles.stream().map(role -> new SimpleGrantedAuthority(role.getName())).collect(Collectors.toList());
