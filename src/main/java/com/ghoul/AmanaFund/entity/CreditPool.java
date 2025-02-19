@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 
 @Setter
@@ -13,12 +14,12 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Credit_Pool {
+public class CreditPool {
     @Id
     @GeneratedValue
     private int id_credit_pool;
-    private double minValue;
     private double maxValue;
+    private double minValue;
     private int n_Echeance;
     private double pool_Sum;
     private boolean full;
@@ -27,6 +28,6 @@ public class Credit_Pool {
     private Timestamp grace_Period;
     private Timestamp Period;
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "creditPool")
-    private Set<Contract> contracts;
+    private List<Contract> contracts;
 
 }

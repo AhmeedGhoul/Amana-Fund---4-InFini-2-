@@ -21,6 +21,7 @@ public class Payment {
     private LocalDateTime date_payment;
     private String Agent;
     private Double amount;
+    private Boolean Status ;
 
     @ManyToOne
     private Contract contract;
