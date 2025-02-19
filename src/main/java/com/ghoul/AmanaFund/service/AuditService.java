@@ -16,9 +16,7 @@ public class AuditService {
        auditServiceRepository.save(audit);
 
     }
-    public List<Audit> findAll() {
-        return auditServiceRepository.findAll();
-    }
+
     public void delete(Audit audit) {
         auditServiceRepository.delete(audit);
 

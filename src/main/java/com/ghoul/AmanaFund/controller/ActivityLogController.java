@@ -6,10 +6,8 @@ import com.ghoul.AmanaFund.security.JwtService;
 import com.ghoul.AmanaFund.service.ActivityService;
 import com.ghoul.AmanaFund.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,7 +24,7 @@ public class ActivityLogController {
     private final JwtService jwtService;
     private final AuthenticationService service;
     @GetMapping("/ActivityLog")
-    public ResponseEntity<List<ActivityLog>> showActivityLog(@RequestHeader("Authorization") String token) throws MessagingException {
+    public ResponseEntity<List<ActivityLog>> showActivityLog(@RequestHeader("Authorization") String token){
         List<ActivityLog> activityLog = activityService.findAll();
         String email = jwtService.extractUsername(token.replace("Bearer ", ""));
         Users deletedByUser = service.getUserByEmail(email);

@@ -8,7 +8,6 @@ import com.ghoul.AmanaFund.service.ActivityService;
 import com.ghoul.AmanaFund.service.AuditService;
 import com.ghoul.AmanaFund.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

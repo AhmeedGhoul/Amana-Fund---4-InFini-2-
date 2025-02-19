@@ -37,7 +37,7 @@ public class AuthenticationService {
     @Value("${application.mailing.frontend.activation-url}")
     private String activationUrl;
 
-    public void registerUser(RegistrationRequest request) throws MessagingException {
+    public void registerUser(RegistrationRequest request) {
         var userRole = roleRepository.findByName("ROLE_USER")
                 // todo - better exception handling
                 .orElseThrow(() -> new IllegalStateException("ROLE USER was not initiated"));
@@ -59,7 +59,7 @@ public class AuthenticationService {
      userRepository.save(user);
 
     }
-    public void grantRole(String email, String role) throws MessagingException {
+    public void grantRole(String email, String role)  {
         var userRole = roleRepository.findByName(role)
                 // todo - better exception handling
                 .orElseThrow(() -> new IllegalStateException("ROLE USER was not initiated"));
@@ -68,7 +68,7 @@ public class AuthenticationService {
             userRepository.save(userr);
 
     }
-    public void deleteRoleAsignedToUser(String email,String role) throws MessagingException {
+    public void deleteRoleAsignedToUser(String email,String role){
         var userRole = roleRepository.findByName(role)
                 // todo - better exception handling
                 .orElseThrow(() -> new IllegalStateException("ROLE USER was not initiated"));
@@ -95,7 +95,7 @@ public class AuthenticationService {
     }
 
     private String generateAndSaveActivationToken(Users user) {
-        String generatedToken = generateActivationCode(6);
+        String generatedToken = generateActivationCode();
         var token = Token.builder()
                 .token(generatedToken)
                 .createdAt(LocalDateTime.now())
@@ -105,11 +105,11 @@ public class AuthenticationService {
    tokenRepository.save(token);
     return generatedToken;}
 
-    private String generateActivationCode(int length) {
+    private String generateActivationCode() {
         String characters="0123456789";
         StringBuilder codeBuilder = new StringBuilder();
         SecureRandom random = new SecureRandom();
-        for (int i = 0; i < length; i++) {
+        for (int i = 0; i < 6; i++) {
             codeBuilder.append(characters.charAt(random.nextInt(characters.length())));
         }
         return codeBuilder.toString();
@@ -180,7 +180,7 @@ public class AuthenticationService {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
-    public void modifyUser(@Valid Users User) throws MessagingException {
+    public void modifyUser(@Valid Users User) {
         var userr= userRepository.findByEmail(User.getEmail()).orElseThrow(()->new IllegalStateException("USER NOT FOUND"));
         if(userr!=null){
             var updatedUser = Users.builder()
@@ -205,7 +205,7 @@ public class AuthenticationService {
 
 
     }
-    public List<Users> getAllUsers() throws MessagingException {
+    public List<Users> getAllUsers()  {
         return userRepository.findAll();
     }
 
