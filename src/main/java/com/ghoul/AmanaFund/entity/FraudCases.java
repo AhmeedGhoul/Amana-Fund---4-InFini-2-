@@ -1,6 +1,8 @@
 package com.ghoul.AmanaFund.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -15,10 +17,17 @@ public class FraudCases {
     @Id
     @GeneratedValue
     private int id_Fraud;
-    private CaseType caseType;
+   @NotNull(message = "Case type is required")
+   private CaseType caseType;
+
+    @NotNull(message = "Detection date is required")
+    @PastOrPresent(message = "Detection date cannot be in the future")
     private LocalDateTime detectionDateTime;
+
+    @NotNull(message = "Case status is required")
     private CaseStatus caseStatus;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Audit_id", nullable = false)
+    @JoinColumn(name = "Audit_id", nullable = true)
     private Audit audit;
 }

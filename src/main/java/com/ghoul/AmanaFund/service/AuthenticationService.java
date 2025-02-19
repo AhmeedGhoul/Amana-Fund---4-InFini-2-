@@ -1,7 +1,7 @@
 package com.ghoul.AmanaFund.service;
 
 import com.ghoul.AmanaFund.Dao.AuthenticationRequest;
-import com.ghoul.AmanaFund.Dao.AuthenticationResponse;
+import com.ghoul.AmanaFund.controller.AuthenticationResponse;
 import com.ghoul.AmanaFund.Dao.RegistrationRequest;
 import com.ghoul.AmanaFund.entity.EmailTemplateName;
 import com.ghoul.AmanaFund.repository.RoleRepository;
@@ -11,6 +11,7 @@ import com.ghoul.AmanaFund.repository.TokenRepository;
 import com.ghoul.AmanaFund.entity.Users;
 import com.ghoul.AmanaFund.repository.UserRepository;
 import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,7 +26,6 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-
 public class AuthenticationService {
     private final RoleRepository roleRepository;
     private final AuthenticationManager authenticationManager;
@@ -37,7 +37,7 @@ public class AuthenticationService {
     @Value("${application.mailing.frontend.activation-url}")
     private String activationUrl;
 
-    public boolean registerUser(RegistrationRequest request) throws MessagingException {
+    public void registerUser(RegistrationRequest request) throws MessagingException {
         var userRole = roleRepository.findByName("ROLE_USER")
                 // todo - better exception handling
                 .orElseThrow(() -> new IllegalStateException("ROLE USER was not initiated"));
@@ -48,34 +48,34 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .accountLocked(false)
                 .enabled(true)
+                .accountDeleted(false)
+                .age(request.getAge())
+                .address(request.getAddress())
+                .dateOfBirth(request.getDateOfBirth())
+                .civilStatus(request.getCivilStatus())
                 //.enabled(false)
                 .roles(List.of(userRole))
                 .build();
-        Users savedUser = userRepository.save(user);
-        if (savedUser != null) {
-        //    sendValidationEmail(savedUser);
-            return true;
-        }
-        return false;
+     userRepository.save(user);
+
     }
-    public boolean grantRole(String email, String role) throws MessagingException {
+    public void grantRole(String email, String role) throws MessagingException {
         var userRole = roleRepository.findByName(role)
                 // todo - better exception handling
                 .orElseThrow(() -> new IllegalStateException("ROLE USER was not initiated"));
         var userr= userRepository.findByEmail(email).orElseThrow(()->new IllegalStateException("USER NOT FOUND"));
-        if (  userr.getRoles().add(userRole)) {
+        userr.getRoles().add(userRole);
             userRepository.save(userr);
-            return true;
-        }
-        return false;
+
     }
     public void deleteRoleAsignedToUser(String email,String role) throws MessagingException {
         var userRole = roleRepository.findByName(role)
                 // todo - better exception handling
                 .orElseThrow(() -> new IllegalStateException("ROLE USER was not initiated"));
         var userr= userRepository.findByEmail(email).orElseThrow(()->new IllegalStateException("USER NOT FOUND"));
-        userr.getRoles().remove(userRole);
-        userRepository.save(userr);
+      userr.getRoles().remove(userRole);
+            userRepository.save(userr);
+
     }
     private void sendValidationEmail(Users user) throws MessagingException {
         var newToken= generateAndSaveActivationToken(user);
@@ -152,14 +152,35 @@ public class AuthenticationService {
         tokenRepository.save(savedToken);
     }
 
-    public void deleteUser(Users User) throws MessagingException {
-        userRepository.delete(User);
+    public void deleteUser(@Valid Users User) {
+        var userr= userRepository.findByEmail(User.getEmail()).orElseThrow(()->new IllegalStateException("USER NOT FOUND"));
+        if(userr!=null) {
+
+            var updatedUser = Users.builder()
+                    .id(userr.getId())
+                    .email(userr.getEmail())
+                    .firstName(userr.getFirstName())
+                    .lastName(userr.getLastName())
+                    .email(userr.getEmail())
+                    .password(passwordEncoder.encode(User.getPassword()))
+                    .accountLocked(userr.getAccountLocked())
+                    .accountDeleted(true)
+                    .age(userr.getAge())
+                    .address(userr.getAddress())
+                    .dateOfBirth(userr.getDateOfBirth())
+                    .civilStatus(userr.getCivilStatus())
+                    .enabled(userr.getEnabled())
+                    .roles(userr.getRoles())
+                    .build();
+            userRepository.save(updatedUser);
+        }
+
     }
     public Users getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
-    public void modifyUser(Users User) throws MessagingException {
+    public void modifyUser(@Valid Users User) throws MessagingException {
         var userr= userRepository.findByEmail(User.getEmail()).orElseThrow(()->new IllegalStateException("USER NOT FOUND"));
         if(userr!=null){
             var updatedUser = Users.builder()
@@ -170,16 +191,22 @@ public class AuthenticationService {
                     .email(User.getEmail())
                     .password(passwordEncoder.encode(User.getPassword()))
                     .accountLocked(userr.getAccountLocked())
+                    .accountDeleted(userr.getAccountDeleted())
+                    .age(User.getAge())
+                    .address(User.getAddress())
+                    .dateOfBirth(User.getDateOfBirth())
+                    .civilStatus(User.getCivilStatus())
                     .enabled(userr.getEnabled())
                     .roles(userr.getRoles())
                     .build();
-        userRepository.save(updatedUser);}
+        userRepository.save(updatedUser);
+
+        }
+
 
     }
     public List<Users> getAllUsers() throws MessagingException {
         return userRepository.findAll();
     }
-    public Users findUserByEmail(String email) throws MessagingException {
-        return getUserByEmail(email);
-    }
+
 }

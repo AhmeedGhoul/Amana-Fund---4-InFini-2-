@@ -10,6 +10,7 @@ public enum BusinessErrorCodes {
     ACCOUNT_LOCKED(302,HttpStatus.FORBIDDEN,"Account locked"),
     ACCOUNT_DISABLED(303,HttpStatus.FORBIDDEN,"Account disabled"),
     BAD_CREDENTIALS(304,HttpStatus.BAD_REQUEST,"Bad credentials"),
+    ACTIVITY_LOG(304,HttpStatus.BAD_REQUEST,"Activity log"),
     ;
     @Getter
     private final int code;

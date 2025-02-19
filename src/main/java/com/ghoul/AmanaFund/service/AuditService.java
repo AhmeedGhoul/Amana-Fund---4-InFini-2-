@@ -13,20 +13,22 @@ import java.util.List;
 public class AuditService {
     private final AuditServiceRepository auditServiceRepository;
     public void save(Audit audit) {
-        auditServiceRepository.save(audit);
+       auditServiceRepository.save(audit);
+
     }
     public List<Audit> findAll() {
         return auditServiceRepository.findAll();
     }
     public void delete(Audit audit) {
         auditServiceRepository.delete(audit);
+
     }
-    public Audit getAuditByEmail(int id) {
+    public Audit getAuditById(int id) {
         return auditServiceRepository.findById(id)
-                .orElseThrow(() -> new UsernameNotFoundException("Aduit not found"));
+                .orElseThrow(() -> new UsernameNotFoundException("Audit not found"));
     }
     public void modify(Audit audit) {
-        var auditt=getAuditByEmail(audit.getIdAudit());
+        var auditt= getAuditById(audit.getIdAudit());
         if(auditt!=null) {
             var newAudit= Audit.builder().idAudit(auditt.getIdAudit())
                             .dateAudit(audit.getDateAudit())
@@ -38,6 +40,7 @@ public class AuditService {
 
         auditServiceRepository.save(newAudit);
         }
+
     }
     public List<Audit> getAllAudit() {
         return auditServiceRepository.findAll();
