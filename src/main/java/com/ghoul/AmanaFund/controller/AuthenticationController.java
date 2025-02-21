@@ -91,10 +91,7 @@ public class AuthenticationController {
         }
     }
 
-    @GetMapping("/activate-account")
-    public void confirm(@RequestParam String token) throws MessagingException {
-        authService.activateAccount(token);
-    }
+
 
     private Users extractUser(String token) {
         String email = jwtService.extractUsername(token.replace("Bearer ", ""));
