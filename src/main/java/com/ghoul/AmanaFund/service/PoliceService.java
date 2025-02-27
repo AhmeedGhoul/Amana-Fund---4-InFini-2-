@@ -3,7 +3,6 @@ import com.ghoul.AmanaFund.repository.IpoliceRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import com.ghoul.AmanaFund.entity.Police;
-import com.ghoul.AmanaFund.service.IpoliceService;
 import java.util.List;
 
 
