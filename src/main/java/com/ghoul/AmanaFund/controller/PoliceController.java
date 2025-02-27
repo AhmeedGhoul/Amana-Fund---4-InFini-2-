@@ -32,4 +32,9 @@ public class PoliceController {
     {
         return ipoliceService.updatePolice(police);
     }
-}
+
+    @DeleteMapping("/remove/{id}")
+    public void removePolice(@PathVariable long id) {
+        ipoliceService.removePolice(id);
+
+    }}
