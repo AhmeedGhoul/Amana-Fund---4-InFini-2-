@@ -30,4 +30,7 @@ public class FraudCases {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "Audit_id", nullable = true)
     private Audit audit;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = true)
+    private Users responsibleUser;
 }

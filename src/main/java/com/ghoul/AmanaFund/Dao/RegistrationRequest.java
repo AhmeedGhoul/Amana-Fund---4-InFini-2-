@@ -31,6 +31,9 @@ public class RegistrationRequest {
     @NotBlank(message = "Address is required")
     private String address;
 
+    @NotBlank(message = "Phone Number is required")
+    @Pattern(regexp = "^\\+216\\d{8}$", message = "Phone number must start with +216 and be exactly 8 digits long")
+    private String phoneNumber;
     @NotNull(message = "Civil Status is required")
     private CivilStatus civilStatus;
 

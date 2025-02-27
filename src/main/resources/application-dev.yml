@@ -47,3 +47,10 @@ server:
 
 springdoc:
   default-produces-media-type: application/json
+infobip:
+  api:
+    url: "https://ypjy3d.api.infobip.com"
+    key: "73d085fc07746e1908851f3f997c844d-ac649f8a-0dfb-448f-b5c7-d2d355b7b376"
+  sender: "447491163443"
+
+

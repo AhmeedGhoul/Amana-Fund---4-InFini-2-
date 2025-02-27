@@ -33,10 +33,13 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final TokenRepository tokenRepository;
+    private final EmailService emailService;
+    private final  SmSService smSService;
+
     @Value("${application.mailing.frontend.activation-url}")
     private String activationUrl;
 
-    public void registerUser(RegistrationRequest request) {
+    public void registerUser(RegistrationRequest request) throws MessagingException {
         var userRole = roleRepository.findByName("ROLE_USER")
                 // todo - better exception handling
                 .orElseThrow(() -> new IllegalStateException("ROLE USER was not initiated"));
@@ -46,36 +49,41 @@ public class AuthenticationService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .accountLocked(false)
-                .enabled(true)
+                .enabled(false)
                 .accountDeleted(false)
                 .age(request.getAge())
                 .address(request.getAddress())
+                .phoneNumber(request.getPhoneNumber())
                 .dateOfBirth(request.getDateOfBirth())
                 .civilStatus(request.getCivilStatus())
                 .roles(List.of(userRole))
                 .build();
-     userRepository.save(user);
+        userRepository.save(user);
+        sendValidationEmail(user);
+        //sendValidationSms(user);
+
 
     }
-    public void grantRole(String email, String role)  {
+
+    public void grantRole(String email, String role) {
         var userRole = roleRepository.findByName(role)
                 // todo - better exception handling
                 .orElseThrow(() -> new IllegalStateException("ROLE USER was not initiated"));
-        var userr= userRepository.findByEmail(email).orElseThrow(()->new IllegalStateException("USER NOT FOUND"));
+        var userr = userRepository.findByEmail(email).orElseThrow(() -> new IllegalStateException("USER NOT FOUND"));
         userr.getRoles().add(userRole);
-            userRepository.save(userr);
+        userRepository.save(userr);
 
     }
-    public void deleteRoleAsignedToUser(String email,String role){
+
+    public void deleteRoleAsignedToUser(String email, String role) {
         var userRole = roleRepository.findByName(role)
                 // todo - better exception handling
                 .orElseThrow(() -> new IllegalStateException("ROLE USER was not initiated"));
-        var userr= userRepository.findByEmail(email).orElseThrow(()->new IllegalStateException("USER NOT FOUND"));
-      userr.getRoles().remove(userRole);
-            userRepository.save(userr);
+        var userr = userRepository.findByEmail(email).orElseThrow(() -> new IllegalStateException("USER NOT FOUND"));
+        userr.getRoles().remove(userRole);
+        userRepository.save(userr);
 
     }
-
 
 
     private String generateAndSaveActivationToken(Users user) {
@@ -86,11 +94,12 @@ public class AuthenticationService {
                 .expiresAt(LocalDateTime.now().plusMinutes(15))
                 .user(user)
                 .build();
-   tokenRepository.save(token);
-    return generatedToken;}
+        tokenRepository.save(token);
+        return generatedToken;
+    }
 
     private String generateActivationCode() {
-        String characters="0123456789";
+        String characters = "0123456789";
         StringBuilder codeBuilder = new StringBuilder();
         SecureRandom random = new SecureRandom();
         for (int i = 0; i < 6; i++) {
@@ -118,10 +127,9 @@ public class AuthenticationService {
     }
 
 
-
     public void deleteUser(@Valid Users User) {
-        var userr= userRepository.findByEmail(User.getEmail()).orElseThrow(()->new IllegalStateException("USER NOT FOUND"));
-        if(userr!=null) {
+        var userr = userRepository.findByEmail(User.getEmail()).orElseThrow(() -> new IllegalStateException("USER NOT FOUND"));
+        if (userr != null) {
 
             var updatedUser = Users.builder()
                     .id(userr.getId())
@@ -133,6 +141,7 @@ public class AuthenticationService {
                     .accountLocked(userr.getAccountLocked())
                     .accountDeleted(true)
                     .age(userr.getAge())
+                    .phoneNumber(userr.getPhoneNumber())
                     .address(userr.getAddress())
                     .dateOfBirth(userr.getDateOfBirth())
                     .civilStatus(userr.getCivilStatus())
@@ -143,13 +152,15 @@ public class AuthenticationService {
         }
 
     }
+
     public Users getUserByEmail(String email) {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
+
     public void modifyUser(@Valid Users User) {
-        var userr= userRepository.findByEmail(User.getEmail()).orElseThrow(()->new IllegalStateException("USER NOT FOUND"));
-        if(userr!=null){
+        var userr = userRepository.findByEmail(User.getEmail()).orElseThrow(() -> new IllegalStateException("USER NOT FOUND"));
+        if (userr != null) {
             var updatedUser = Users.builder()
                     .id(userr.getId())
                     .email(User.getEmail())
@@ -161,19 +172,60 @@ public class AuthenticationService {
                     .accountDeleted(userr.getAccountDeleted())
                     .age(User.getAge())
                     .address(User.getAddress())
+                    .phoneNumber(User.getPhoneNumber())
                     .dateOfBirth(User.getDateOfBirth())
                     .civilStatus(User.getCivilStatus())
                     .enabled(userr.getEnabled())
                     .roles(userr.getRoles())
                     .build();
-        userRepository.save(updatedUser);
+            userRepository.save(updatedUser);
 
         }
 
 
     }
-    public List<Users> getAllUsers()  {
+
+    public List<Users> getAllUsers() {
         return userRepository.findAll();
     }
 
+    private void sendValidationEmail(Users user) throws MessagingException {
+        var newToken = generateAndSaveActivationToken(user);
+        emailService.sendEmail(
+                user.getEmail(),
+                user.getName(),
+                EmailTemplateName.ACTIVATE_ACCOUNT,
+                activationUrl,
+                newToken,
+                "Account activation"
+
+
+        );
+
+
+    }
+    public void sendValidationSms(Users user) {
+        var newToken = generateAndSaveActivationToken(user);
+
+        String smsMessage = "Your activation code is: " + newToken;
+
+        smSService.sendSms(user.getPhoneNumber(), smsMessage);
+    }
+
+    public void activateAccount(String token) throws MessagingException {
+        Token savedToken = tokenRepository.findByToken(token)
+                // todo exception has to be defined
+                .orElseThrow(() -> new RuntimeException("Invalid token"));
+        if (LocalDateTime.now().isAfter(savedToken.getExpiresAt())) {
+            sendValidationEmail(savedToken.getUser());
+            throw new RuntimeException("Activation token has expired. A new token has been send to the same email address");
+        }
+        var user = userRepository.findById(savedToken.getUser().getId())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        user.setEnabled(true);
+        userRepository.save(user);
+
+        savedToken.setValidatedAt(LocalDateTime.now());
+        tokenRepository.save(savedToken);
+    }
 }

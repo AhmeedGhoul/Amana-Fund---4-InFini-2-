@@ -56,8 +56,13 @@ public class Users implements UserDetails, Principal {
         @NotBlank(message = "Password is required")
         @Size(min = 8, message = "Password must be at least 8 characters long")
         private String password;
+        @NotBlank(message = "Phone Number is required")
+        @Pattern(regexp = "^\\+216\\d{8}$", message = "Phone number must start with +216 and be exactly 8 digits long")
+        private String phoneNumber;
 
-        @Past(message = "Date of birth must be in the past")
+
+
+    @Past(message = "Date of birth must be in the past")
         private LocalDate dateOfBirth;
 
 

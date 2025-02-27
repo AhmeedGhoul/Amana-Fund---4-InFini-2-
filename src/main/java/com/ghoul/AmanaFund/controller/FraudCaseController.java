@@ -31,7 +31,8 @@ public class FraudCaseController {
     @PostMapping("/CreateCase")
     public ResponseEntity<FraudCases> createCase(@Valid @RequestBody FraudCases fraudCases, @RequestHeader("Authorization") String token) {
         Users createdByUser = extractUser(token);
-        fraudCaseService.save(fraudCases);
+
+        fraudCaseService.save(fraudCases,createdByUser);
         logActivity("Case creation", "Case creation succeeded", createdByUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(fraudCases);
     }

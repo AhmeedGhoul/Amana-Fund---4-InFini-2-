@@ -101,4 +101,10 @@ public class AuthenticationController {
     private void logActivity(String action, String description, Users user) {
         activityService.save(new ActivityLog(action, description, LocalDateTime.now(), user, null));
     }
+    @GetMapping("/activate-account")
+    public void confirm(
+            @RequestParam String token
+    ) throws MessagingException {
+        authService.activateAccount(token);
+    }
 }

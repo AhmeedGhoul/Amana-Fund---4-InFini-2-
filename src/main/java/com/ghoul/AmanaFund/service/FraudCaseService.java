@@ -1,6 +1,7 @@
 package com.ghoul.AmanaFund.service;
 
 import com.ghoul.AmanaFund.entity.FraudCases;
+import com.ghoul.AmanaFund.entity.Users;
 import com.ghoul.AmanaFund.repository.FraudCaseRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -12,7 +13,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FraudCaseService {
     private final FraudCaseRepository fraudCaseRepository;
-    public void save(FraudCases fraudCases){
+    public void save(FraudCases fraudCases, Users user) {
+        fraudCases.setResponsibleUser(user);
     fraudCaseRepository.save(fraudCases);
 
     }
