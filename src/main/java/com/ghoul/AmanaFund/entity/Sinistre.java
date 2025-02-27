@@ -16,6 +16,7 @@ import java.util.Set;
 @AllArgsConstructor
 public class Sinistre {
     @Id
+    @GeneratedValue
     private Long idSinistre;
     private Double claimAmount;
     private Double reinsuranceShaire;

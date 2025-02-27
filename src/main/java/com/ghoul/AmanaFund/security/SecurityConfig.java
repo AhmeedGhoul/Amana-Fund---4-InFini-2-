@@ -27,20 +27,40 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.
-                cors(withDefaults()).
-                csrf(AbstractHttpConfigurer::disable).
-                authorizeHttpRequests(req ->
-                req.requestMatchers(
-                                "/auth/register",
-                                "/auth/authenticate",
-                                "/auth/activate-account"
-                        ).permitAll()
-                        .anyRequest().authenticated()
-        )
-                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
-                .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
-        return http.build();
+        http
+               //    .cors(withDefaults()) // Permet l'utilisation des CORS
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(req -> req
+                        // Désactiver la sécurité temporairement pour toutes les routes
+                        .anyRequest().permitAll()
+                )
+             //   .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
+        // Supprimer le filtre JWT
+        // .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+        ;
+
+        return http.build();// Désactive la protection CSRF (recommandée pour une API stateless)
+            /*    .authorizeHttpRequests(req -> req
+                        // Routes Swagger accessibles sans authentification
+                        .requestMatchers(
+                                "/v2/api-docs",
+                                "/v3/api-docs",
+                                "/swagger-resources",
+                                "/swagger-resources/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/configuration/ui",
+                                "/configuration/security",
+                                "/webjars/**"
+                        ).permitAll()  // Permet d'accéder à ces routes sans authentification
+
+                        // Autres routes sécurisées
+                        .anyRequest().authenticated()  // Demande une authentification pour les autres routes
+                )
+                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))  // Utilisation de JWT, pas de session
+                .authenticationProvider(authenticationProvider)  // Ajout du provider d'authentification
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);  // Filtre JWT avant le filtre d'authentification par mot de passe
+
+        return http.build();*/
     }
 }
