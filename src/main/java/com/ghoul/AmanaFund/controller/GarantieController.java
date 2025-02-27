@@ -1,12 +1,11 @@
 package com.ghoul.AmanaFund.controller;
 
-import com.ghoul.AmanaFund.entity.Garantie;
-import com.ghoul.AmanaFund.entity.Police;
-import com.ghoul.AmanaFund.service.IgarantieService;
-import com.ghoul.AmanaFund.service.IpoliceService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import com.ghoul.AmanaFund.entity.*;
+import com.ghoul.AmanaFund.service.*;
 
 import java.util.List;
 
@@ -16,27 +15,26 @@ import java.util.List;
 
 
 public class GarantieController {
-    IgarantieService igs;
-    @PostMapping("add_garantie")
+    @Autowired
+    private GrantieService garantieService;
+    @PostMapping("/add_garantie")
     public Garantie addGarantie(@RequestBody Garantie garantie)
     {
-        return igs.addGarantie( garantie);
+        return garantieService.addGarantie(garantie);
     }
-    @GetMapping("getall_Garantie")
+    @GetMapping("/getall_garantie")
     public List<Garantie> GetAllGarantie()
     {
-        return igs.retrieveGaranties();
+        return garantieService.retrieveGaranties();
     }
-    @PutMapping("update_Garantie")
+    @PutMapping("/update_garantie")
     public Garantie updateGarantie(@RequestBody Garantie garantie)
     {
-        return igs.updateGarantie(garantie);
+        return garantieService.updateGarantie(garantie);
     }
 
-    @DeleteMapping("/remove/{id}")
+    @DeleteMapping("/remove_garantie/{id}")
     public void removeGarantie(@PathVariable long id) {
-        igs.removeGarantie(id);
-
+        garantieService.removeGarantie(id);
     }
-
 }

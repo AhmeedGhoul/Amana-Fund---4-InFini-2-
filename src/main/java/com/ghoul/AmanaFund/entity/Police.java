@@ -17,6 +17,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class Police {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idPolice;
     private Date start;
     private Date end;
@@ -26,6 +27,6 @@ public class Police {
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "police")
     private Set<Garantie> Garanties;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private Users user;
 }

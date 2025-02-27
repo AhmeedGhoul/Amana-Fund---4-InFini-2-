@@ -14,6 +14,7 @@ import lombok.Setter;
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Garantie {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idGarantie;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "police_id", nullable = false)

@@ -1,6 +1,7 @@
 package com.ghoul.AmanaFund.service;
 import com.ghoul.AmanaFund.repository.IpoliceRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ghoul.AmanaFund.entity.Police;
 import java.util.List;
@@ -10,7 +11,8 @@ import java.util.List;
 @AllArgsConstructor
 
 public class PoliceService implements IpoliceService{
-    IpoliceRepository ipoliceRepository;
+    @Autowired
+    private IpoliceRepository ipoliceRepository;
     @Override
     public Police addPolice(Police police) {
         return ipoliceRepository.save(police);

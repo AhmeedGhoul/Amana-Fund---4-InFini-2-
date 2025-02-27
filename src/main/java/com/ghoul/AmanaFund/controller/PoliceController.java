@@ -1,8 +1,7 @@
 package com.ghoul.AmanaFund.controller;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.ghoul.AmanaFund.entity.*;
 import com.ghoul.AmanaFund.service.*;
@@ -16,25 +15,26 @@ import java.util.List;
 @Slf4j
 
 public class PoliceController {
-    IpoliceService ipoliceService;
-    @PostMapping("add_police")
+    @Autowired
+    private PoliceService policeService;
+    @PostMapping("/add_police")
     public Police addPolice(@RequestBody Police police)
     {
-        return ipoliceService.addPolice(police);
+        return policeService.addPolice(police);
     }
-    @GetMapping("getall_police")
+    @GetMapping("/getall_police")
     public List<Police> GetAllPolice()
     {
-        return ipoliceService.retrievePolices();
+        return policeService.retrievePolices();
     }
-    @PutMapping("update_police")
+    @PutMapping("/update_police")
     public Police updatePolice(@RequestBody Police police)
     {
-        return ipoliceService.updatePolice(police);
+        return policeService.updatePolice(police);
     }
 
-    @DeleteMapping("/remove/{id}")
+    @DeleteMapping("/removepolice/{id}")
     public void removePolice(@PathVariable long id) {
-        ipoliceService.removePolice(id);
-
-    }}
+        policeService.removePolice(id);
+    }
+}
