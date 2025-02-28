@@ -1,0 +1,49 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/Pidev?useSSL=false&serverTimezone=UTC
+    username: root
+    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQLDialect
+
+  mail:
+    host: localhost
+    port: 1025
+    username: username
+    password: password
+    properties:
+      mail:
+        smtp:
+          trust: "*"
+        auth: true
+        starttls:
+          enabled: true
+        connectiontimeout: 5000
+        timeout: 3000
+        writetimeout: 5000
+
+application:
+  security:
+    jwt:
+      secret-key: JhtwZb0eG1auJ8fIuS7RlmStvl1jE5P0He7Fmj9T2Nl8dpG7gY3Uw5wKNvhfVojE5+lg4E28Q14e/pVX9hrp+Jq1kg+dfy6ixtP6tMzYhwpw6KjDC5FS9J7TO9Twsf7I
+      expiration: 8640000
+  mailing:
+    frontend:
+      activation-url: http://localhost:4200/activate-account
+
+server:
+  port: 8088
+  servlet:
+    context-path: /api/v1/
+
+springdoc:
+  default-produces-media-type: application/json
