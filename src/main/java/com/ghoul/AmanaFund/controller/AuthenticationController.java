@@ -81,13 +81,25 @@ public class AuthenticationController {
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticationResponse> authenticateUser(@RequestBody AuthenticationRequest request) {
         try {
-            AuthenticationResponse response = authService.authenticate(request);
+            authService.authenticate(request);
             Users user = authService.getUserByEmail(request.getEmail());
             logActivity("Authentication", "User Authentication succeeded", user);
-            return ResponseEntity.ok(response);
+            authService.sendValidationSms(user);
+            return ResponseEntity.ok(new AuthenticationResponse("Authentication succeeded. Please check your email for the 2FA code."));
         } catch (BadCredentialsException e) {
             logActivity("Authentication", "User Authentication failed", authService.getUserByEmail(request.getEmail()));
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthenticationResponse("Invalid credentials"));
+        }
+    }
+
+    @GetMapping("/F2A")
+    public ResponseEntity<AuthenticationResponse> verify2FACode(@RequestParam String token) throws MessagingException {
+        try {
+            AuthenticationResponse response = authService.activateAccount(token);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthenticationResponse("Invalid 2FA code or expired token"));
         }
     }
 
@@ -101,10 +113,5 @@ public class AuthenticationController {
     private void logActivity(String action, String description, Users user) {
         activityService.save(new ActivityLog(action, description, LocalDateTime.now(), user, null));
     }
-    @GetMapping("/activate-account")
-    public void confirm(
-            @RequestParam String token
-    ) throws MessagingException {
-        authService.activateAccount(token);
-    }
+
 }
