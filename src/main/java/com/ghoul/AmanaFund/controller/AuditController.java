@@ -10,11 +10,15 @@ import com.ghoul.AmanaFund.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -54,10 +58,17 @@ public class AuditController {
     }
 
     @GetMapping("/Audit")
-    public ResponseEntity<List<Audit>> getAllAudit(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<Page<Audit>> getAllAudit(
+            @RequestHeader("Authorization") String token,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         Users fetchedByUser = extractUser(token);
         logActivity("Audit preview", "Audit preview succeeded", fetchedByUser);
-        return ResponseEntity.ok(auditService.getAllAudit());
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Audit> auditPage = auditService.getAllAudit(pageable);
+
+        return ResponseEntity.ok(auditPage);
     }
 
     private Users extractUser(String token) {
@@ -69,17 +80,27 @@ public class AuditController {
         activityService.save(new ActivityLog(action, description, LocalDateTime.now(), user, null));
     }
     @GetMapping("/search")
-    public ResponseEntity<List<Audit>> searchAudits(
+    public ResponseEntity<Page<Audit>> searchAudits(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateAudit,
             @RequestParam(required = false) String statusAudit,
             @RequestParam(required = false) String output,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime reviewedDate,
             @RequestParam(required = false) String auditType,
-            @RequestParam(required = false) List<String> sortBy) {
+            @RequestParam(required = false) List<String> sortBy,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
-        List<Audit> audits = auditService.searchAudits(dateAudit, statusAudit, output, reviewedDate, auditType,sortBy);
-
+        Page<Audit> audits = auditService.searchAudits(dateAudit, statusAudit, output, reviewedDate, auditType, sortBy, page, size);
         return ResponseEntity.ok(audits);
     }
+    @GetMapping("/generateAuditReport")
+    public ResponseEntity<Void> generateAuditReport(
+            @RequestHeader("Authorization") String token,
+            @RequestParam(required = false) String directoryPath,
+            @RequestParam(required = false) String fileName) throws IOException {
+        Users fetchedByUser = extractUser(token);
+        String filePath = auditService.generateAuditReport(fetchedByUser, directoryPath, fileName);
 
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
 }

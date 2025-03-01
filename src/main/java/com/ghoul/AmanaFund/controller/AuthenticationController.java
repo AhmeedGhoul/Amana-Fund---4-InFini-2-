@@ -12,11 +12,13 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -64,13 +66,15 @@ public class AuthenticationController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<List<Users>> showUsers(@RequestHeader("Authorization") String token) throws MessagingException {
+    public ResponseEntity<Page<Users>> showUsers(
+            @RequestHeader("Authorization") String token,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) throws MessagingException {
         Users adminUser = extractUser(token);
-        List<Users> users = authService.getAllUsers();
+        Page<Users> users = authService.getAllUsersPaginated(page, size);
         logActivity("Users Preview", "User Preview succeeded", adminUser);
         return ResponseEntity.ok(users);
     }
-
     @PutMapping("/Modify")
     public ResponseEntity<Void> modifyUser(@RequestBody Users user, @RequestHeader("Authorization") String token) throws MessagingException {
         Users adminUser = extractUser(token);
@@ -116,7 +120,7 @@ public class AuthenticationController {
         activityService.save(new ActivityLog(action, description, LocalDateTime.now(), user, null));
     }
     @GetMapping("/search")
-    public ResponseEntity<List<Users>> searchUsers(
+    public ResponseEntity<Page<Users>> searchUsers(
             @RequestParam(required = false) String firstName,
             @RequestParam(required = false) String lastName,
             @RequestParam(required = false) String email,
@@ -124,9 +128,20 @@ public class AuthenticationController {
             @RequestParam(required = false) String phoneNumber,
             @RequestParam(required = false) LocalDate dateOfBirth,
             @RequestParam(required = false) Boolean enabled,
-            @RequestParam(required = false) List<String> sortBy) {
+            @RequestParam(required = false) List<String> sortBy,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
-        List<Users> users=  authService.searchUsers(firstName, lastName, email, age, phoneNumber, dateOfBirth, enabled, sortBy);
+        Page<Users> users = authService.searchUsersPaginated(firstName, lastName, email, age, phoneNumber, dateOfBirth, enabled, sortBy, page, size);
         return ResponseEntity.ok(users);
     }
+    @GetMapping("/generateUserReport")
+    public ResponseEntity<Void> generateUserReport(
+            @RequestParam(required = false) String directoryPath,
+            @RequestParam(required = false) String fileName) throws IOException {
+
+        String filePath = authService.generateUserReport(directoryPath, fileName);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+
 }

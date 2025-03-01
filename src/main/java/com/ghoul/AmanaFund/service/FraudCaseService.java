@@ -7,12 +7,22 @@ import com.ghoul.AmanaFund.entity.Users;
 import com.ghoul.AmanaFund.repository.FraudCaseRepository;
 import com.ghoul.AmanaFund.specification.CaseSpecification;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,9 +34,6 @@ public class FraudCaseService {
         fraudCases.setResponsibleUser(user);
     fraudCaseRepository.save(fraudCases);
 
-    }
-    public List<FraudCases> findAll() {
-        return fraudCaseRepository.findAll();
     }
     public void delete(FraudCases fraudCases) {
         fraudCaseRepository.delete(fraudCases);
@@ -48,12 +55,9 @@ public class FraudCaseService {
         }
 
     }
-    public List<FraudCases> getAllCases(){
-        return fraudCaseRepository.findAll();
-    }
-    public List<FraudCases> searchFraudCases(
+    public Page<FraudCases> searchFraudCases(
             String caseType, LocalDateTime detectionDateTime, String caseStatus,
-            Integer userId, Integer auditId, List<String> sortBy) {
+            Integer userId, Integer auditId, List<String> sortBy, int page, int size) {
 
         Specification<FraudCases> spec = CaseSpecification.searchFraudCases(caseType, detectionDateTime, caseStatus, userId, auditId);
 
@@ -72,6 +76,54 @@ public class FraudCaseService {
             sort = Sort.by(orders);
         }
 
-        return fraudCaseRepository.findAll(spec, sort);
+        PageRequest pageRequest = PageRequest.of(page, size, sort);
+        return fraudCaseRepository.findAll(spec, pageRequest);
     }
+
+    public Page<FraudCases> findAll(int page, int size) {
+        PageRequest pageRequest = PageRequest.of(page, size);
+        return fraudCaseRepository.findAll(pageRequest);
+    }
+
+    public String generateFraudCaseReport(Users user, String directoryPath, String fileName) throws IOException {
+        List<FraudCases> fraudCases = fraudCaseRepository.findByResponsibleUser(user);
+        if (directoryPath == null || directoryPath.trim().isEmpty()) {
+            directoryPath = "C:/Users/ahmed/Downloads";
+        }
+        File directory = new File(directoryPath);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+        if (fileName == null || fileName.trim().isEmpty()) {
+            fileName = "fraud_case_report.xlsx";
+        }
+        String filePath = directoryPath + "/" + fileName;
+        File file = new File(filePath);
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Fraud Cases");
+        Row headerRow = sheet.createRow(0);
+        String[] headers = {"Case Type", "Detection Date", "Case Status", "Responsible User", "Audit ID"};
+        for (int i = 0; i < headers.length; i++) {
+            headerRow.createCell(i).setCellValue(headers[i]);
+        }
+        int rowNum = 1;
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        for (FraudCases fraudCase : fraudCases) {
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(fraudCase.getCaseType().toString());
+            row.createCell(1).setCellValue(fraudCase.getDetectionDateTime().format(dateTimeFormatter));
+            row.createCell(2).setCellValue(fraudCase.getCaseStatus().toString());
+            row.createCell(3).setCellValue(fraudCase.getResponsibleUser() != null ? fraudCase.getResponsibleUser().getName() : "N/A");
+            row.createCell(4).setCellValue(fraudCase.getAudit() != null ? fraudCase.getAudit().getOutput() : "N/A");
+        }
+
+        try (FileOutputStream fileOut = new FileOutputStream(file)) {
+            workbook.write(fileOut);
+        } finally {
+            workbook.close();
+        }
+        return filePath;
+    }
+
+
 }

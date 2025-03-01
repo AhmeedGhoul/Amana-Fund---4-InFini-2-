@@ -7,9 +7,14 @@ import com.ghoul.AmanaFund.service.ActivityService;
 import com.ghoul.AmanaFund.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 @RestController
@@ -21,24 +26,39 @@ public class ActivityLogController {
     private final JwtService jwtService;
     private final AuthenticationService service;
     @GetMapping("/ActivityLog")
-    public ResponseEntity<List<ActivityLog>> showActivityLog(@RequestHeader("Authorization") String token){
-        List<ActivityLog> activityLog = activityService.findAll();
+    public ResponseEntity<Page<ActivityLog>> showActivityLog(
+            @RequestHeader("Authorization") String token,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<ActivityLog> activityLog = activityService.findAll(pageable);
         String email = jwtService.extractUsername(token.replace("Bearer ", ""));
         Users deletedByUser = service.getUserByEmail(email);
-        activityService.save(new ActivityLog("Activity Preview","Activity Preview succeeded" , LocalDateTime.now(),deletedByUser,null));
-
+        activityService.save(new ActivityLog("Activity Preview", "Activity Preview succeeded", LocalDateTime.now(), deletedByUser, null));
         return ResponseEntity.ok(activityLog);
     }
     @GetMapping("/search")
-    public ResponseEntity<List<ActivityLog>> searchActivityLogs(
+    public ResponseEntity<Page<ActivityLog>> searchActivityLogs(
             @RequestParam(required = false) String activityName,
             @RequestParam(required = false) String activityDescription,
             @RequestParam(required = false) LocalDateTime activityDate,
             @RequestParam(required = false) Integer userId,
             @RequestParam(required = false) Integer auditId,
-            @RequestParam(required = false) List<String> sortBy) {
+            @RequestParam(required = false) List<String> sortBy,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
-        List<ActivityLog> activityLogs=  activityService.searchActivityLogs(activityName, activityDescription, activityDate, userId, auditId, sortBy);
+        Page<ActivityLog> activityLogs = activityService.searchActivityLogs(activityName, activityDescription, activityDate, userId, auditId, sortBy, page, size);
         return ResponseEntity.ok(activityLogs);
+    }
+    @GetMapping("/generateActivityLogReport")
+    public ResponseEntity<Void> generateActivityLogReport(
+            @RequestHeader("Authorization") String token,
+            @RequestParam(required = false) String directoryPath,
+            @RequestParam(required = false) String fileName) throws IOException {
+        String email = jwtService.extractUsername(token.replace("Bearer ", ""));
+        Users deletedByUser = service.getUserByEmail(email);
+        String filePath = activityService.generateActivityLogReport(deletedByUser, directoryPath, fileName);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

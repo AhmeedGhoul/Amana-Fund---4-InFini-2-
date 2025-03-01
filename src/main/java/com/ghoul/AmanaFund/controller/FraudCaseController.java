@@ -8,10 +8,12 @@ import com.ghoul.AmanaFund.service.FraudCaseService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -51,12 +53,7 @@ public class FraudCaseController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @GetMapping("/Case")
-    public ResponseEntity<List<FraudCases>> showFraudCases(@RequestHeader("Authorization") String token) {
-        Users requestingUser = extractUser(token);
-        logActivity("Cases preview", "Cases preview succeeded", requestingUser);
-        return ResponseEntity.ok(fraudCaseService.findAll());
-    }
+
 
     private Users extractUser(String token) {
         String email = jwtService.extractUsername(token.replace("Bearer ", ""));
@@ -67,15 +64,43 @@ public class FraudCaseController {
         activityService.save(new ActivityLog(action, description, LocalDateTime.now(), user, null));
     }
     @GetMapping("/search")
-    public ResponseEntity<List<FraudCases>> searchFraudCases(
+    public ResponseEntity<Page<FraudCases>> searchFraudCases(
             @RequestParam(required = false) String caseType,
             @RequestParam(required = false) LocalDateTime detectionDateTime,
             @RequestParam(required = false) String caseStatus,
             @RequestParam(required = false) Integer userId,
             @RequestParam(required = false) Integer auditId,
-            @RequestParam(required = false) List<String> sortBy) {
+            @RequestParam(required = false) List<String> sortBy,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
 
-        List<FraudCases> fraudCases= fraudCaseService.searchFraudCases(caseType, detectionDateTime, caseStatus, userId, auditId, sortBy);
+        Page<FraudCases> fraudCases = fraudCaseService.searchFraudCases(
+                caseType, detectionDateTime, caseStatus, userId, auditId, sortBy, page, size);
+
         return ResponseEntity.ok(fraudCases);
+    }
+
+    @GetMapping("/Case")
+    public ResponseEntity<Page<FraudCases>> showFraudCases(
+            @RequestHeader("Authorization") String token,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Users requestingUser = extractUser(token);
+        logActivity("Cases preview", "Cases preview succeeded", requestingUser);
+
+        Page<FraudCases> fraudCases = fraudCaseService.findAll(page, size);
+        return ResponseEntity.ok(fraudCases);
+    }
+
+    @GetMapping("/generateFraudCaseReport")
+    public ResponseEntity<Void> generateFraudCaseReport(
+            @RequestHeader("Authorization") String token,
+            @RequestParam(required = false) String directoryPath,
+            @RequestParam(required = false) String fileName) throws IOException {
+        Users createdByUser = extractUser(token);
+        String filePath = fraudCaseService.generateFraudCaseReport(createdByUser, directoryPath, fileName);
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

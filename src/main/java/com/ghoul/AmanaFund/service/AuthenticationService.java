@@ -14,7 +14,14 @@ import com.ghoul.AmanaFund.specification.UserSpecification;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,16 +29,21 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class AuthenticationService {
+public class    AuthenticationService {
     private final RoleRepository roleRepository;
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
@@ -205,9 +217,6 @@ public class AuthenticationService {
 
     }
 
-    public List<Users> getAllUsers() {
-        return userRepository.findAll();
-    }
 
     private void sendValidationEmail(Users user) throws MessagingException {
         var newToken = generateAndSaveActivationToken(user);
@@ -231,11 +240,17 @@ public class AuthenticationService {
 
         smSService.sendSms(user.getPhoneNumber(), smsMessage);
     }
-    public List<Users> searchUsers(
+    public Page<Users> getAllUsersPaginated(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdDate"));
+        return userRepository.findAll(pageable);
+    }
+
+    public Page<Users> searchUsersPaginated(
             String firstName, String lastName, String email,
-            Integer age, String phoneNumber, LocalDate dateOfBirth, Boolean enabled, List<String> sortBy) {
+            Integer age, String phoneNumber, LocalDate dateOfBirth, Boolean enabled, List<String> sortBy, int page, int size) {
         Specification<Users> spec = UserSpecification.searchUsers(firstName, lastName, email, age, phoneNumber, dateOfBirth, enabled);
-        Sort sort = Sort.by(Sort.Direction.DESC, "createdDate");
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdDate"));
+
         if (sortBy != null && !sortBy.isEmpty()) {
             List<Sort.Order> orders = new ArrayList<>();
             for (String field : sortBy) {
@@ -245,10 +260,58 @@ public class AuthenticationService {
                     orders.add(new Sort.Order(Sort.Direction.ASC, field));
                 }
             }
-            sort = Sort.by(orders);
+            pageable = PageRequest.of(page, size, Sort.by(orders));
         }
 
-        return userRepository.findAll(spec, sort);
+        return userRepository.findAll(spec, pageable);
+    }
+    public String generateUserReport(String directoryPath, String fileName) throws IOException {
+        List<Users> users = userRepository.findAll();
+
+        if (directoryPath == null || directoryPath.trim().isEmpty()) {
+            directoryPath = "C:/Users/ahmed/Downloads";
+        }
+        File directory = new File(directoryPath);
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
+        if (fileName == null || fileName.trim().isEmpty()) {
+            fileName = "user_report.xlsx";
+        }
+        String filePath = directoryPath + "/" + fileName;
+        File file = new File(filePath);
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("User Report");
+        Row headerRow = sheet.createRow(0);
+        String[] headers = {"ID", "First Name", "Last Name", "Email", "Age", "Address", "Civil Status", "Phone Number", "Date of Birth", "Enabled", "Account Deleted", "Account Locked", "Created Date", "Last Modified Date"};
+        for (int i = 0; i < headers.length; i++) {
+            headerRow.createCell(i).setCellValue(headers[i]);
+        }
+        int rowNum = 1;
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        for (Users user : users) {
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(user.getId());
+            row.createCell(1).setCellValue(user.getFirstName());
+            row.createCell(2).setCellValue(user.getLastName());
+            row.createCell(3).setCellValue(user.getEmail());
+            row.createCell(4).setCellValue(user.getAge());
+            row.createCell(5).setCellValue(user.getAddress());
+            row.createCell(6).setCellValue(user.getCivilStatus().toString());
+            row.createCell(7).setCellValue(user.getPhoneNumber());
+            row.createCell(8).setCellValue(user.getDateOfBirth().toString());
+            row.createCell(9).setCellValue(user.getEnabled() ? "Yes" : "No");
+            row.createCell(10).setCellValue(user.getAccountDeleted() ? "Yes" : "No");
+            row.createCell(11).setCellValue(user.getAccountLocked() ? "Yes" : "No");
+            row.createCell(12).setCellValue(user.getCreatedDate().toString());
+            row.createCell(13).setCellValue(user.getLastModifiedDate() != null ? user.getLastModifiedDate().toString() : "N/A");
+        }
+        try (FileOutputStream fileOut = new FileOutputStream(file)) {
+            workbook.write(fileOut);
+        } finally {
+            workbook.close();
+        }
+        return filePath;
     }
 
 }
