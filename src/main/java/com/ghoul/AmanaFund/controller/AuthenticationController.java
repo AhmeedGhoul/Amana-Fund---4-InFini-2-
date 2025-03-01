@@ -17,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -84,11 +85,12 @@ public class AuthenticationController {
             authService.authenticate(request);
             Users user = authService.getUserByEmail(request.getEmail());
             logActivity("Authentication", "User Authentication succeeded", user);
-            authService.sendValidationSms(user);
             return ResponseEntity.ok(new AuthenticationResponse("Authentication succeeded. Please check your email for the 2FA code."));
         } catch (BadCredentialsException e) {
             logActivity("Authentication", "User Authentication failed", authService.getUserByEmail(request.getEmail()));
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthenticationResponse("Invalid credentials"));
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -113,5 +115,18 @@ public class AuthenticationController {
     private void logActivity(String action, String description, Users user) {
         activityService.save(new ActivityLog(action, description, LocalDateTime.now(), user, null));
     }
+    @GetMapping("/search")
+    public ResponseEntity<List<Users>> searchUsers(
+            @RequestParam(required = false) String firstName,
+            @RequestParam(required = false) String lastName,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) Integer age,
+            @RequestParam(required = false) String phoneNumber,
+            @RequestParam(required = false) LocalDate dateOfBirth,
+            @RequestParam(required = false) Boolean enabled,
+            @RequestParam(required = false) List<String> sortBy) {
 
+        List<Users> users=  authService.searchUsers(firstName, lastName, email, age, phoneNumber, dateOfBirth, enabled, sortBy);
+        return ResponseEntity.ok(users);
+    }
 }

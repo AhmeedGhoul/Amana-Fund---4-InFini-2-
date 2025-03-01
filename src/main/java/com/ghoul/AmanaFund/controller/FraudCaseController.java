@@ -1,8 +1,6 @@
 package com.ghoul.AmanaFund.controller;
 
-import com.ghoul.AmanaFund.entity.ActivityLog;
-import com.ghoul.AmanaFund.entity.FraudCases;
-import com.ghoul.AmanaFund.entity.Users;
+import com.ghoul.AmanaFund.entity.*;
 import com.ghoul.AmanaFund.security.JwtService;
 import com.ghoul.AmanaFund.service.ActivityService;
 import com.ghoul.AmanaFund.service.AuthenticationService;
@@ -67,5 +65,17 @@ public class FraudCaseController {
 
     private void logActivity(String action, String description, Users user) {
         activityService.save(new ActivityLog(action, description, LocalDateTime.now(), user, null));
+    }
+    @GetMapping("/search")
+    public ResponseEntity<List<FraudCases>> searchFraudCases(
+            @RequestParam(required = false) String caseType,
+            @RequestParam(required = false) LocalDateTime detectionDateTime,
+            @RequestParam(required = false) String caseStatus,
+            @RequestParam(required = false) Integer userId,
+            @RequestParam(required = false) Integer auditId,
+            @RequestParam(required = false) List<String> sortBy) {
+
+        List<FraudCases> fraudCases= fraudCaseService.searchFraudCases(caseType, detectionDateTime, caseStatus, userId, auditId, sortBy);
+        return ResponseEntity.ok(fraudCases);
     }
 }

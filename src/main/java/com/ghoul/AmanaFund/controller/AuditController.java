@@ -10,6 +10,7 @@ import com.ghoul.AmanaFund.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -67,4 +68,18 @@ public class AuditController {
     private void logActivity(String action, String description, Users user) {
         activityService.save(new ActivityLog(action, description, LocalDateTime.now(), user, null));
     }
+    @GetMapping("/search")
+    public ResponseEntity<List<Audit>> searchAudits(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateAudit,
+            @RequestParam(required = false) String statusAudit,
+            @RequestParam(required = false) String output,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime reviewedDate,
+            @RequestParam(required = false) String auditType,
+            @RequestParam(required = false) List<String> sortBy) {
+
+        List<Audit> audits = auditService.searchAudits(dateAudit, statusAudit, output, reviewedDate, auditType,sortBy);
+
+        return ResponseEntity.ok(audits);
+    }
+
 }

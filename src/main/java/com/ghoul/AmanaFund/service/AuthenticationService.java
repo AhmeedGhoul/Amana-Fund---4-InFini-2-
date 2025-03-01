@@ -10,17 +10,22 @@ import com.ghoul.AmanaFund.entity.Token;
 import com.ghoul.AmanaFund.repository.TokenRepository;
 import com.ghoul.AmanaFund.entity.Users;
 import com.ghoul.AmanaFund.repository.UserRepository;
+import com.ghoul.AmanaFund.specification.UserSpecification;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -62,7 +67,7 @@ public class AuthenticationService {
         userRepository.save(user);
     }
 
-    public void authenticate(AuthenticationRequest request) {
+    public void authenticate(AuthenticationRequest request) throws MessagingException {
         var auth = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
@@ -71,7 +76,8 @@ public class AuthenticationService {
         );
 
         var user = ((Users) auth.getPrincipal());
-        sendValidationSms(user);
+        sendValidationEmail(user);
+        //sendValidationSms(user);
     }
 
     public AuthenticationResponse activateAccount(String token) throws MessagingException {
@@ -225,6 +231,24 @@ public class AuthenticationService {
 
         smSService.sendSms(user.getPhoneNumber(), smsMessage);
     }
+    public List<Users> searchUsers(
+            String firstName, String lastName, String email,
+            Integer age, String phoneNumber, LocalDate dateOfBirth, Boolean enabled, List<String> sortBy) {
+        Specification<Users> spec = UserSpecification.searchUsers(firstName, lastName, email, age, phoneNumber, dateOfBirth, enabled);
+        Sort sort = Sort.by(Sort.Direction.DESC, "createdDate");
+        if (sortBy != null && !sortBy.isEmpty()) {
+            List<Sort.Order> orders = new ArrayList<>();
+            for (String field : sortBy) {
+                if (field.startsWith("-")) {
+                    orders.add(new Sort.Order(Sort.Direction.DESC, field.substring(1)));
+                } else {
+                    orders.add(new Sort.Order(Sort.Direction.ASC, field));
+                }
+            }
+            sort = Sort.by(orders);
+        }
 
+        return userRepository.findAll(spec, sort);
+    }
 
 }

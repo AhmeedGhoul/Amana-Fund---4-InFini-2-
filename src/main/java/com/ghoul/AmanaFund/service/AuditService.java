@@ -2,10 +2,15 @@ package com.ghoul.AmanaFund.service;
 
 import com.ghoul.AmanaFund.entity.Audit;
 import com.ghoul.AmanaFund.repository.AuditServiceRepository;
+import com.ghoul.AmanaFund.specification.AuditSpecification;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -42,5 +47,24 @@ public class AuditService {
     }
     public List<Audit> getAllAudit() {
         return auditServiceRepository.findAll();
+    }
+    public List<Audit> searchAudits(LocalDateTime dateAudit, String statusAudit, String output, LocalDateTime reviewedDate, String auditType, List<String> sortBy) {
+        Specification<Audit> spec = AuditSpecification.searchAudit(dateAudit, statusAudit, output, reviewedDate, auditType);
+        Sort sort = Sort.by(Sort.Direction.DESC, "dateAudit");
+        if (sortBy != null && !sortBy.isEmpty()) {
+            List<Sort.Order> orders = new ArrayList<>();
+
+            for (String field : sortBy) {
+                if (field.startsWith("-")) {
+                    orders.add(new Sort.Order(Sort.Direction.DESC, field.substring(1)));
+                } else {
+                    orders.add(new Sort.Order(Sort.Direction.ASC, field));
+                }
+            }
+
+            sort = Sort.by(orders);
+        }
+
+        return auditServiceRepository.findAll(spec, sort);
     }
 }

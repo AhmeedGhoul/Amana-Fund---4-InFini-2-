@@ -8,10 +8,7 @@ import com.ghoul.AmanaFund.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,5 +29,16 @@ public class ActivityLogController {
 
         return ResponseEntity.ok(activityLog);
     }
+    @GetMapping("/search")
+    public ResponseEntity<List<ActivityLog>> searchActivityLogs(
+            @RequestParam(required = false) String activityName,
+            @RequestParam(required = false) String activityDescription,
+            @RequestParam(required = false) LocalDateTime activityDate,
+            @RequestParam(required = false) Integer userId,
+            @RequestParam(required = false) Integer auditId,
+            @RequestParam(required = false) List<String> sortBy) {
 
+        List<ActivityLog> activityLogs=  activityService.searchActivityLogs(activityName, activityDescription, activityDate, userId, auditId, sortBy);
+        return ResponseEntity.ok(activityLogs);
+    }
 }
