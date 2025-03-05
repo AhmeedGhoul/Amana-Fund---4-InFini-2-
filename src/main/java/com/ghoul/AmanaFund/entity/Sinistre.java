@@ -1,5 +1,6 @@
 package com.ghoul.AmanaFund.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
@@ -36,6 +37,9 @@ public class Sinistre {
     @NotNull(message = "Le montant du règlement est obligatoire")
     @Positive(message = "Le montant du règlement doit être positif")
     private Double settlementAmount;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private Users user;
 
     @OneToMany(mappedBy = "sinistre", cascade = CascadeType.ALL)
     private Set<ContratReassurance> contratReassurances;

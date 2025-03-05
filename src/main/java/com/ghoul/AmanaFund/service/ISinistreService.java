@@ -16,4 +16,10 @@ public interface ISinistreService {
     List<Sinistre> getAll();
     Page<Sinistre> getAllPaginated(Pageable pageable);
     List<Sinistre> searchSinistres(Long idSinistre,Double claimAmount, Date settlementDate, Double settlementAmount);
+
+    double calculerIndemnisationFinale(Long id);
+
+    double predireFondsDeReserve();
+
+    int evaluerRisque(Long userId);
 }

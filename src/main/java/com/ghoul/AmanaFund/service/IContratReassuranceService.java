@@ -15,4 +15,6 @@ public interface IContratReassuranceService {
     List<ContratReassurance> getAll();
     Page<ContratReassurance> getAllPaginated(Pageable pageable);
     List<ContratReassurance> searchContrats(Long idContrat, String name, Date date);
+
+    double calculerRatioRentabilite(Long id);
 }

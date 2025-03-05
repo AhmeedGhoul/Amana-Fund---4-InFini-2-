@@ -57,4 +57,8 @@ public class ContratReassuranceController {
     ) {
         return ResponseEntity.ok(RS.searchContrats(idContrat, name, date));
     }
+    @GetMapping("/{id}/rentabilite")
+    public double getRatioRentabilite(@PathVariable Long id) {
+        return RS.calculerRatioRentabilite(id);
+    }
 }

@@ -59,6 +59,35 @@ public class SinitreController {
     ) {
         return ResponseEntity.ok(sinistreService.searchSinistres(idSinistre, claimAmount, settlementDate, settlementAmount));
     }
+    @GetMapping("/{id}/indemnisation")
+    public double getIndemnisationFinale(@PathVariable Long id) {
+        return sinistreService.calculerIndemnisationFinale(id);
+    }
+    @GetMapping("/fonds-reserve")
+    public double getFondsDeReserve() {
+        return sinistreService.predireFondsDeReserve();
+    }
+    @GetMapping("/evaluer-risque/{userId}")
+    public ResponseEntity<String> evaluerRisque(@PathVariable Long userId) {
+        int risque = sinistreService.evaluerRisque(userId);
+        String risqueMessage;
 
+        switch (risque) {
+            case 0:
+                risqueMessage = "Risque faible";
+                break;
+            case 1:
+                risqueMessage = "Risque moyen";
+                break;
+            case 2:
+                risqueMessage = "Risque élevé";
+                break;
+            default:
+                risqueMessage = "Erreur d'évaluation";
+                break;
+        }
+
+        return ResponseEntity.ok("Le risque de l'utilisateur est : " + risqueMessage);
+    }
 
 }

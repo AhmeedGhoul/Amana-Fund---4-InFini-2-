@@ -66,6 +66,16 @@ public class ContratReassuranceService implements IContratReassuranceService {
 
         return contratReassuranceRepository.findAll(spec);
 }
+    public double calculerRatioRentabilite(Long contratId) {
+        ContratReassurance contrat = contratReassuranceRepository.findById(contratId)
+                .orElseThrow(() -> new RuntimeException("Contrat non trouvé avec l'ID : " + contratId));
+
+        if (contrat.getCoverageLimit() == 0) {
+            throw new ArithmeticException("Erreur : Plafond de couverture invalide.");
+        }
+
+        return contrat.getPremium() / contrat.getCoverageLimit();
+    }
 
 
 }
