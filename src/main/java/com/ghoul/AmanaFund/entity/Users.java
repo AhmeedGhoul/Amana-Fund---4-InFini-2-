@@ -16,6 +16,7 @@ import java.security.Principal;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Setter
@@ -30,7 +31,7 @@ public class Users implements UserDetails, Principal {
 
     @Id
     @GeneratedValue
-    private Integer id;
+    private Long id;
 
     @NotBlank(message = "First name is required")
         private String firstName;
@@ -141,6 +142,13 @@ public class Users implements UserDetails, Principal {
 
     public String fullName() {
         return firstName + " " + lastName;
+    }
+    @OneToMany(mappedBy = "user")
+    private List<Sinistre> sinistres;
+
+    @Transient
+    public long getNumberOfSinistres() {
+        return sinistres != null ? sinistres.size() : 0;
     }
 
 }
