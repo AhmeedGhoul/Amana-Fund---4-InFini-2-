@@ -22,6 +22,7 @@ public class Contract {
     private int queue_Number;
     private Double amount;
     private Double payed;
+    private RegimePaiement regimePaiement;
     @ManyToOne
     private Credit_Pool creditPool;
     @OneToMany(cascade = CascadeType.ALL,mappedBy = "contract")
