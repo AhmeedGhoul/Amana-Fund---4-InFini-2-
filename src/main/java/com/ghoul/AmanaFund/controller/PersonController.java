@@ -13,6 +13,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @Slf4j
+@RequestMapping("Person")
 public class PersonController {
     @Autowired
     private PersonService personService;

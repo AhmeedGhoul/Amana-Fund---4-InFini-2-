@@ -18,6 +18,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @RestController
+@RequestMapping("Sinitre")
 public class SinitreController {
     private final ISinistreService sinistreService;
 
@@ -68,7 +69,7 @@ public class SinitreController {
         return sinistreService.predireFondsDeReserve();
     }
     @GetMapping("/evaluer-risque/{userId}")
-    public ResponseEntity<String> evaluerRisque(@PathVariable Long userId) {
+    public ResponseEntity<String> evaluerRisque(@PathVariable int userId) {
         int risque = sinistreService.evaluerRisque(userId);
         String risqueMessage;
 

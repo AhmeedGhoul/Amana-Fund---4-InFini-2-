@@ -19,7 +19,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @Slf4j
-
+@RequestMapping("Police")
 public class PoliceController {
     @Autowired
     private PoliceService policeService;

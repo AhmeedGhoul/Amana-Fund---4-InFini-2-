@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @Slf4j
 
-
+@RequestMapping("Garantie")
 public class GarantieController {
     @Autowired
     private GrantieService garantieService;

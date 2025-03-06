@@ -14,6 +14,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @Slf4j
+@RequestMapping("Object")
 public class ObjectController {
     @Autowired
     private ObjectService objectService;

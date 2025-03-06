@@ -31,7 +31,7 @@ public class Users implements UserDetails, Principal {
 
     @Id
     @GeneratedValue
-    private Long id;
+    private int id;
 
     @NotBlank(message = "First name is required")
         private String firstName;

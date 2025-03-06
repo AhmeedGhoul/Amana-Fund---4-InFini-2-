@@ -21,5 +21,5 @@ public interface ISinistreService {
 
     double predireFondsDeReserve();
 
-    int evaluerRisque(Long userId);
+    int evaluerRisque(int userId);
 }

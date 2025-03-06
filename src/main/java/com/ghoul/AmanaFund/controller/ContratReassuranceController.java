@@ -19,6 +19,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @RestController
+@RequestMapping("Contract")
 public class ContratReassuranceController {
     private IContratReassuranceService RS;
     @PostMapping("/addReassurance")

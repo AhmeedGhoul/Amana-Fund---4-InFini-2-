@@ -93,7 +93,7 @@ public class SinistreService implements  ISinistreService{
         double totalSinistres = sinistres.stream().mapToDouble(Sinistre::getClaimAmount).sum();
         return (totalSinistres / sinistres.size()) * 1.2; // 20% de marge de sécurité
     }
-    public int evaluerRisque(Long userid) {
+    public int evaluerRisque(int userid) {
         Users user = userRepository.findById(userid)
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 

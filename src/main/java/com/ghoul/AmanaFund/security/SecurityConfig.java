@@ -56,6 +56,14 @@ public class SecurityConfig {
                                 "/Sinistre/**"
                         ).hasRole("AUDITOR")
                         .requestMatchers(
+                                "Account/**",
+                                "account-payments/**",
+                                "Contract/**",
+                                "Garantie/**",
+                                "Object/**",
+                                "Person/**",
+                                "Police/**",
+                                "Sinitre/**",
                                 "/AccountPayment/**",
                                 "/Account/**",
                                 "/Agency/**",
