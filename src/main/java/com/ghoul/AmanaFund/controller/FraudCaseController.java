@@ -5,6 +5,7 @@ import com.ghoul.AmanaFund.security.JwtService;
 import com.ghoul.AmanaFund.service.ActivityService;
 import com.ghoul.AmanaFund.service.AuthenticationService;
 import com.ghoul.AmanaFund.service.FraudCaseService;
+import com.ghoul.AmanaFund.service.IpGeolocationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,29 +28,35 @@ public class FraudCaseController {
     private final JwtService jwtService;
     private final AuthenticationService authService;
     private final ActivityService activityService;
+    private final IpGeolocationService ipGeolocationService;
 
     @PostMapping("/CreateCase")
-    public ResponseEntity<FraudCases> createCase(@Valid @RequestBody FraudCases fraudCases, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<FraudCases> createCase(@Valid @RequestBody FraudCases fraudCases, @RequestHeader("Authorization") String token) throws IOException {
         Users createdByUser = extractUser(token);
-
+        String ipAddress = ipGeolocationService.getIpFromIpify();
+        String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
         fraudCaseService.save(fraudCases,createdByUser);
-        logActivity("Case creation", "Case creation succeeded", createdByUser);
+        logActivity("Case creation", "Case creation succeeded", createdByUser,ipAddress,country);
         return ResponseEntity.status(HttpStatus.CREATED).body(fraudCases);
     }
 
     @PutMapping("/ModifyCase")
-    public ResponseEntity<FraudCases> modifyCase(@Valid @RequestBody FraudCases fraudCases, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<FraudCases> modifyCase(@Valid @RequestBody FraudCases fraudCases, @RequestHeader("Authorization") String token) throws IOException {
         Users modifiedByUser = extractUser(token);
         fraudCaseService.modify(fraudCases);
-        logActivity("Case modification", "Case modification succeeded", modifiedByUser);
+        String ipAddress = ipGeolocationService.getIpFromIpify();
+        String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
+        logActivity("Case modification", "Case modification succeeded", modifiedByUser,ipAddress,country);
         return ResponseEntity.status(HttpStatus.OK).body(fraudCases);
     }
 
     @DeleteMapping("/DeleteCase")
-    public ResponseEntity<Void> deleteCase(@RequestBody FraudCases fraudCases, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<Void> deleteCase(@RequestBody FraudCases fraudCases, @RequestHeader("Authorization") String token) throws IOException {
         Users deletedByUser = extractUser(token);
         fraudCaseService.delete(fraudCases);
-        logActivity("Case deletion", "Case deletion succeeded", deletedByUser);
+        String ipAddress = ipGeolocationService.getIpFromIpify();
+        String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
+        logActivity("Case deletion", "Case deletion succeeded", deletedByUser,ipAddress,country);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -60,8 +67,8 @@ public class FraudCaseController {
         return authService.getUserByEmail(email);
     }
 
-    private void logActivity(String action, String description, Users user) {
-        activityService.save(new ActivityLog(action, description, LocalDateTime.now(), user, null));
+    private void logActivity(String action, String description, Users user,String ipAddress,String country) {
+        activityService.save(new ActivityLog(action, description, LocalDateTime.now(), user, null, ipAddress, country));
     }
     @GetMapping("/search")
     public ResponseEntity<Page<FraudCases>> searchFraudCases(
@@ -84,10 +91,11 @@ public class FraudCaseController {
     public ResponseEntity<Page<FraudCases>> showFraudCases(
             @RequestHeader("Authorization") String token,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-
+            @RequestParam(defaultValue = "10") int size) throws IOException {
+        String ipAddress = ipGeolocationService.getIpFromIpify();
+        String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
         Users requestingUser = extractUser(token);
-        logActivity("Cases preview", "Cases preview succeeded", requestingUser);
+        logActivity("Cases preview", "Cases preview succeeded", requestingUser,ipAddress,country);
 
         Page<FraudCases> fraudCases = fraudCaseService.findAll(page, size);
         return ResponseEntity.ok(fraudCases);

@@ -5,6 +5,7 @@ import com.ghoul.AmanaFund.entity.Users;
 import com.ghoul.AmanaFund.security.JwtService;
 import com.ghoul.AmanaFund.service.ActivityService;
 import com.ghoul.AmanaFund.service.AuthenticationService;
+import com.ghoul.AmanaFund.service.IpGeolocationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,17 +25,20 @@ import java.util.List;
 public class ActivityLogController {
     private final ActivityService activityService;
     private final JwtService jwtService;
+    private final IpGeolocationService ipGeolocationService;
     private final AuthenticationService service;
     @GetMapping("/ActivityLog")
     public ResponseEntity<Page<ActivityLog>> showActivityLog(
             @RequestHeader("Authorization") String token,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size) throws IOException {
         Pageable pageable = PageRequest.of(page, size);
         Page<ActivityLog> activityLog = activityService.findAll(pageable);
         String email = jwtService.extractUsername(token.replace("Bearer ", ""));
         Users deletedByUser = service.getUserByEmail(email);
-        activityService.save(new ActivityLog("Activity Preview", "Activity Preview succeeded", LocalDateTime.now(), deletedByUser, null));
+        String ipAddress = ipGeolocationService.getIpFromIpify();
+        String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
+        activityService.save(new ActivityLog("Activity Preview", "Activity Preview succeeded", LocalDateTime.now(), deletedByUser, null,ipAddress,country));
         return ResponseEntity.ok(activityLog);
     }
     @GetMapping("/search")

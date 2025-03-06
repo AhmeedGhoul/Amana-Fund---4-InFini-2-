@@ -36,6 +36,13 @@ public class ActivityLog {
     @JoinColumn(name = "audit_id", nullable = true)
     private Audit audit;
 
+    @Column(nullable = true)
+    private String ipAddress;
+
+    @Column(nullable = true)
+    private String country;
+
+
     public ActivityLog(LocalDateTime activityDate, String activityDescription, String activityName) {
         this.activityDate = activityDate;
 
@@ -50,6 +57,16 @@ public class ActivityLog {
         this.activityDate = activityDate;
         this.user = user;
         this.audit = audit;
+    }
+    public ActivityLog(String activityName, String activityDescription, LocalDateTime activityDate, Users user,Audit audit, String ipAddress, String country) {
+        this.activityName = activityName;
+        this.activityDescription = activityDescription;
+
+        this.activityDate = activityDate;
+        this.user = user;
+        this.audit = audit;
+        this.ipAddress = ipAddress;
+        this.country = country;
     }
 
     public ActivityLog() {

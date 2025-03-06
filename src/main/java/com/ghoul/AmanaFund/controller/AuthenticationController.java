@@ -8,8 +8,10 @@ import com.ghoul.AmanaFund.entity.Users;
 import com.ghoul.AmanaFund.security.JwtService;
 import com.ghoul.AmanaFund.service.ActivityService;
 import com.ghoul.AmanaFund.service.AuthenticationService;
+import com.ghoul.AmanaFund.service.IpGeolocationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -28,40 +30,57 @@ import java.util.List;
 @Tag(name = "Authentication")
 @RequiredArgsConstructor
 public class AuthenticationController {
-
+    private final IpGeolocationService ipGeolocationService;
     private final AuthenticationService authService;
     private final ActivityService activityService;
     private final JwtService jwtService;
 
     @PostMapping("/register")
-    public ResponseEntity<Void> createUser(@Valid @RequestBody RegistrationRequest request) throws MessagingException {
-  authService.registerUser(request);
-        activityService.save(new ActivityLog("User Creation", "User Registration succeeded", LocalDateTime.now(), null,null));
+    public ResponseEntity<Void> createUser(@Valid @RequestBody RegistrationRequest request) throws IOException, MessagingException {
+        authService.registerUser(request);
+        String ipAddress = ipGeolocationService.getIpFromIpify();
+        String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
+        activityService.save(new ActivityLog(
+                "User Creation",
+                "User Registration succeeded",
+                LocalDateTime.now(),
+                null,
+                null,
+                ipAddress,
+                country
+        ));
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+
     @PostMapping("/Promote")
-    public ResponseEntity<Void> grantRoleUser(@Valid @RequestBody GrantRoleRequest grantRoleRequest, @RequestHeader("Authorization") String token) throws MessagingException {
+    public ResponseEntity<Void> grantRoleUser(@Valid @RequestBody GrantRoleRequest grantRoleRequest, @RequestHeader("Authorization") String token) throws MessagingException, IOException {
         Users adminUser = extractUser(token);
+        String ipAddress = ipGeolocationService.getIpFromIpify();
+        String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
         authService.grantRole(grantRoleRequest.getEmail(), grantRoleRequest.getRole());
-        logActivity("User Promotion", "User Promotion succeeded", adminUser);
+        logActivity("User Promotion", "User Promotion succeeded", adminUser,ipAddress,country);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PostMapping("/Demote")
-    public ResponseEntity<Void> deleteRoleUser(@Valid @RequestBody GrantRoleRequest grantRoleRequest, @RequestHeader("Authorization") String token) throws MessagingException {
+    public ResponseEntity<Void> deleteRoleUser(@Valid @RequestBody GrantRoleRequest grantRoleRequest, @RequestHeader("Authorization") String token) throws MessagingException, IOException {
         Users adminUser = extractUser(token);
+        String ipAddress = ipGeolocationService.getIpFromIpify();
+        String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
         authService.deleteRoleAsignedToUser(grantRoleRequest.getEmail(), grantRoleRequest.getRole());
-        logActivity("User Demotion", "User Demotion succeeded", adminUser);
+        logActivity("User Demotion", "User Demotion succeeded", adminUser,ipAddress,country);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @DeleteMapping("/Delete")
-    public ResponseEntity<Void> deleteUser(@RequestBody Users user, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<Void> deleteUser(@RequestBody Users user, @RequestHeader("Authorization") String token) throws IOException {
         Users adminUser = extractUser(token);
+        String ipAddress = ipGeolocationService.getIpFromIpify();
+        String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
         authService.deleteUser(user);
-        logActivity("User Delete", "User Delete succeeded", adminUser);
+        logActivity("User Delete", "User Delete succeeded", adminUser,ipAddress,country);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
@@ -69,29 +88,37 @@ public class AuthenticationController {
     public ResponseEntity<Page<Users>> showUsers(
             @RequestHeader("Authorization") String token,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) throws MessagingException {
+            @RequestParam(defaultValue = "10") int size) throws MessagingException, IOException {
         Users adminUser = extractUser(token);
+        String ipAddress = ipGeolocationService.getIpFromIpify();
+        String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
         Page<Users> users = authService.getAllUsersPaginated(page, size);
-        logActivity("Users Preview", "User Preview succeeded", adminUser);
+        logActivity("Users Preview", "User Preview succeeded", adminUser,ipAddress,country);
         return ResponseEntity.ok(users);
     }
     @PutMapping("/Modify")
-    public ResponseEntity<Void> modifyUser(@RequestBody Users user, @RequestHeader("Authorization") String token) throws MessagingException {
+    public ResponseEntity<Void> modifyUser(@RequestBody Users user, @RequestHeader("Authorization") String token) throws MessagingException, IOException {
         Users adminUser = extractUser(token);
         authService.modifyUser(user);
-        logActivity("User Modification", "User Modification succeeded", adminUser);
+        String ipAddress = ipGeolocationService.getIpFromIpify();
+        String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
+        logActivity("User Modification", "User Modification succeeded", adminUser,ipAddress,country);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> authenticateUser(@RequestBody AuthenticationRequest request) {
+    public ResponseEntity<AuthenticationResponse> authenticateUser(@RequestBody AuthenticationRequest request) throws IOException {
         try {
             authService.authenticate(request);
+            String ipAddress = ipGeolocationService.getIpFromIpify();
+            String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
             Users user = authService.getUserByEmail(request.getEmail());
-            logActivity("Authentication", "User Authentication succeeded", user);
+            logActivity("Authentication", "User Authentication succeeded", user,ipAddress,country);
             return ResponseEntity.ok(new AuthenticationResponse("Authentication succeeded. Please check your email for the 2FA code."));
         } catch (BadCredentialsException e) {
-            logActivity("Authentication", "User Authentication failed", authService.getUserByEmail(request.getEmail()));
+            String ipAddress = ipGeolocationService.getIpFromIpify();
+            String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
+            logActivity("Authentication", "User Authentication failed", authService.getUserByEmail(request.getEmail()),ipAddress,country);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthenticationResponse("Invalid credentials"));
         } catch (MessagingException e) {
             throw new RuntimeException(e);
@@ -116,8 +143,8 @@ public class AuthenticationController {
         return authService.getUserByEmail(email);
     }
 
-    private void logActivity(String action, String description, Users user) {
-        activityService.save(new ActivityLog(action, description, LocalDateTime.now(), user, null));
+    private void logActivity(String action, String description, Users user,String ipAddress,String country) {
+        activityService.save(new ActivityLog(action, description, LocalDateTime.now(), user, null, ipAddress, country));
     }
     @GetMapping("/search")
     public ResponseEntity<Page<Users>> searchUsers(

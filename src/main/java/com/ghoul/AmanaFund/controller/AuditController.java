@@ -7,6 +7,7 @@ import com.ghoul.AmanaFund.security.JwtService;
 import com.ghoul.AmanaFund.service.ActivityService;
 import com.ghoul.AmanaFund.service.AuditService;
 import com.ghoul.AmanaFund.service.AuthenticationService;
+import com.ghoul.AmanaFund.service.IpGeolocationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,28 +33,35 @@ public class AuditController {
     private final JwtService jwtService;
     private final AuthenticationService authService;
     private final ActivityService activityService;
+    private final IpGeolocationService ipGeolocationService;
 
     @PostMapping("/CreateAudit")
-    public ResponseEntity<Audit> createAudit(@Valid @RequestBody Audit audit, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<Audit> createAudit(@Valid @RequestBody Audit audit, @RequestHeader("Authorization") String token) throws IOException {
         Users createdByUser = extractUser(token);
+        String ipAddress = ipGeolocationService.getIpFromIpify();
+        String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
         auditService.save(audit);
-        logActivity("Audit creation", "Audit creation succeeded", createdByUser);
+        logActivity("Audit creation", "Audit creation succeeded", createdByUser,ipAddress,country);
         return ResponseEntity.status(HttpStatus.CREATED).body(audit);
     }
 
     @PutMapping("/ModifyAudit")
-    public ResponseEntity<Audit> modifyAudit(@Valid @RequestBody Audit audit, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<Audit> modifyAudit(@Valid @RequestBody Audit audit, @RequestHeader("Authorization") String token) throws IOException {
         Users modifiedByUser = extractUser(token);
+        String ipAddress = ipGeolocationService.getIpFromIpify();
+        String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
         auditService.modify(audit);
-        logActivity("Audit modification", "Audit modification succeeded", modifiedByUser);
+        logActivity("Audit modification", "Audit modification succeeded", modifiedByUser,ipAddress,country);
         return ResponseEntity.status(HttpStatus.OK).body(audit);
     }
 
     @DeleteMapping("/DeleteAudit")
-    public ResponseEntity<Void> deleteAudit(@RequestBody Audit audit, @RequestHeader("Authorization") String token) {
+    public ResponseEntity<Void> deleteAudit(@RequestBody Audit audit, @RequestHeader("Authorization") String token) throws IOException {
         Users deletedByUser = extractUser(token);
+        String ipAddress = ipGeolocationService.getIpFromIpify();
+        String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
         auditService.delete(audit);
-        logActivity("Audit deletion", "Audit deletion succeeded", deletedByUser);
+        logActivity("Audit deletion", "Audit deletion succeeded", deletedByUser,ipAddress,country);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
@@ -61,9 +69,11 @@ public class AuditController {
     public ResponseEntity<Page<Audit>> getAllAudit(
             @RequestHeader("Authorization") String token,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size) throws IOException {
         Users fetchedByUser = extractUser(token);
-        logActivity("Audit preview", "Audit preview succeeded", fetchedByUser);
+        String ipAddress = ipGeolocationService.getIpFromIpify();
+        String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
+        logActivity("Audit preview", "Audit preview succeeded", fetchedByUser,ipAddress,country);
 
         Pageable pageable = PageRequest.of(page, size);
         Page<Audit> auditPage = auditService.getAllAudit(pageable);
@@ -76,8 +86,8 @@ public class AuditController {
         return authService.getUserByEmail(email);
     }
 
-    private void logActivity(String action, String description, Users user) {
-        activityService.save(new ActivityLog(action, description, LocalDateTime.now(), user, null));
+    private void logActivity(String action, String description, Users user,String ipAddress,String country) {
+        activityService.save(new ActivityLog(action, description, LocalDateTime.now(), user, null, ipAddress, country));
     }
     @GetMapping("/search")
     public ResponseEntity<Page<Audit>> searchAudits(
