@@ -8,28 +8,28 @@ import org.springframework.stereotype.Service;
 @Service
 public class SMSsinistre {
 
-    // Remplace par tes informations Twilio
+    // Get the Twilio SID and Auth Token from environment variables
     public static final String ACCOUNT_SID = System.getenv("TWILIO_SID");
-    public static final String AUTH_TOKEN = System.getenv("TWILIO_AUTH");
-    public static final String FROM_PHONE_NUMBER = "+18066029452"; // exemple : +1234567890
+    public static final String AUTH_TOKEN = System.getenv("TWILIO_AUTH_TOKEN");
+    public static final String FROM_PHONE_NUMBER = "+18066029452"; // example: +1234567890
 
     public SMSsinistre() {
-        // Initialise Twilio avec le SID et le Token
+        // Initialize Twilio with SID and Token from environment variables
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
     }
 
     public void sendSms(String toPhoneNumber, String messageBody) {
         try {
-            // Envoie le SMS via Twilio
+            // Send the SMS via Twilio
             Message message = Message.creator(
-                            new PhoneNumber(toPhoneNumber), // Numéro du destinataire
-                            new PhoneNumber(FROM_PHONE_NUMBER), // Numéro Twilio
-                            messageBody) // Contenu du message
+                            new PhoneNumber(toPhoneNumber), // Recipient's phone number
+                            new PhoneNumber(FROM_PHONE_NUMBER), // Your Twilio phone number
+                            messageBody) // Message content
                     .create();
 
-            System.out.println("Message envoyé : " + message.getSid());
+            System.out.println("Message sent: " + message.getSid());
         } catch (Exception e) {
-            System.err.println("Erreur lors de l'envoi du SMS : " + e.getMessage());
+            System.err.println("Error sending SMS: " + e.getMessage());
         }
     }
 
