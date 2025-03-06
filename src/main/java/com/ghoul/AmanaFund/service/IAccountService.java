@@ -5,6 +5,9 @@ import com.ghoul.AmanaFund.entity.AccountType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface IAccountService {
@@ -16,4 +19,8 @@ public interface IAccountService {
     void removeAccount(Integer idAccount);
     List<Account> findByAccountType(AccountType accountType);
     List<Account> findByAmountGreaterThan(Double amount);
+    double calculateFutureValue(Integer accountId, LocalDate targetDate); // Changé à LocalDate
+    double calculateInterestGained(Integer accountId, LocalDate targetDate); // Changé à LocalDate
+    ByteArrayInputStream exportAccountsToExcel(List<Account> accounts) throws IOException;
+
 }

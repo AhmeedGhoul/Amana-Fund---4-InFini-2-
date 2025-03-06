@@ -16,4 +16,5 @@ public interface AccountPaymentRepository extends JpaRepository<AccountPayment, 
     Page<AccountPayment> findAll(Pageable pageable);
     List<AccountPayment> findByAgencyName(String agencyName);
     List<AccountPayment> findByPaymentDateBetween(LocalDate startDate, LocalDate endDate);
+    List<AccountPayment> findByRib(String rib); // Méthode nécessaire pour le calcul
 }

@@ -27,8 +27,11 @@ public class Account {
     @Positive(message = "Le montant doit être positif")
     private Double amount;
 
-    @Column(unique = true, nullable = false) // Contrainte au niveau de la base, mais pas dans la validation
-    private String rib; // Plus de @NotBlank ici
+    @Column(unique = true, nullable = false)
+    private String rib;
+
+    @PositiveOrZero(message = "Le taux d'intérêt doit être positif ou zéro")
+    private Double interestRate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = true)
