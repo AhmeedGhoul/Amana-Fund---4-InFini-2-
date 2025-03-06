@@ -4,6 +4,19 @@ spring:
     username: root
     password:
     driver-class-name: com.mysql.cj.jdbc.Driver
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ahmeeeedghoul@gmail.com  # Your Gmail address
+    password: nmvz dqum nuki woui
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+
 
   jpa:
     hibernate:
@@ -14,22 +27,6 @@ spring:
         format_sql: true
     database: mysql
     database-platform: org.hibernate.dialect.MySQLDialect
-
-  mail:
-    host: localhost
-    port: 1025
-    username: username
-    password: password
-    properties:
-      mail:
-        smtp:
-          trust: "*"
-        auth: true
-        starttls:
-          enabled: true
-        connectiontimeout: 5000
-        timeout: 3000
-        writetimeout: 5000
 
 application:
   security:
