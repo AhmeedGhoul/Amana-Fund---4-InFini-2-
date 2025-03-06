@@ -57,6 +57,7 @@ public class SecurityConfig {
                         ).hasRole("AUDITOR")
                         .requestMatchers(
                                 "Account/**",
+                                "Request/**",
                                 "account-payments/**",
                                 "Contract/**",
                                 "Garantie/**",
