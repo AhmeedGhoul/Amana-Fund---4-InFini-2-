@@ -1,12 +1,15 @@
 package com.ghoul.AmanaFund.controller;
 
 import com.ghoul.AmanaFund.entity.Account;
-import com.ghoul.AmanaFund.service.accountService;
+import com.ghoul.AmanaFund.entity.AccountType;
 import com.ghoul.AmanaFund.service.IAccountService;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
 
 @AllArgsConstructor
@@ -14,22 +17,47 @@ import java.util.List;
 @RequestMapping("Account")
 public class AccountController {
     IAccountService accountService;
+
     @PostMapping("/addaccount")
-    public Account ajouterAccount(@RequestBody Account account)
-    {
+    public Account ajouterAccount(@Valid @RequestBody Account account) {
         return accountService.AddAccount(account);
     }
-    @GetMapping("dispaccount") // Ajout du mapping GET
-    public List<Account> retrieveBlocs() {
 
-        return accountService.retrieveAccount() ;
+    @GetMapping("dispaccount")
+    public List<Account> retrieveBlocs() {
+        return accountService.retrieveAccount();
     }
+
+    @GetMapping("/dispaccount/paged")
+    public Page<Account> retrieveAccountsPaged(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return accountService.retrieveAccount(pageable);
+    }
+
     @PutMapping("updateaccount")
-    public Account updateBloc(@RequestBody Account account) {
+    public Account updateAccount(@Valid @RequestBody Account account) {
         return accountService.updateAccount(account);
     }
+
     @DeleteMapping("delaccount/{id}")
-    public void removeBloc(@PathVariable("id") Integer idAccount) {
+    public void removeAccount(@PathVariable("id") Integer idAccount) {
         accountService.removeAccount(idAccount);
+    }
+
+    @GetMapping("dispaccountId/{id}")
+    public Account retrieveAccount(@PathVariable("id") Integer idAccount) {
+        return accountService.retrieveAccount(idAccount);
+    }
+
+    @GetMapping("/filter/type")
+    public List<Account> filterByType(@RequestParam AccountType accountType) {
+        return accountService.findByAccountType(accountType);
+    }
+
+    @GetMapping("/filter/amount")
+    public List<Account> filterByAmount(@RequestParam Double minAmount) {
+        return accountService.findByAmountGreaterThan(minAmount);
     }
 }
