@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 public class SMSsinistre {
 
     // Remplace par tes informations Twilio
-    public static final String ACCOUNT_SID = "TWILIO_SID";
-    public static final String AUTH_TOKEN = "TWILIO_AUTH_TOKEN";
+    public static final String ACCOUNT_SID = System.getenv("TWILIO_SID");
+    public static final String AUTH_TOKEN = System.getenv("TWILIO_AUTH");
     public static final String FROM_PHONE_NUMBER = "+18066029452"; // exemple : +1234567890
 
     public SMSsinistre() {
