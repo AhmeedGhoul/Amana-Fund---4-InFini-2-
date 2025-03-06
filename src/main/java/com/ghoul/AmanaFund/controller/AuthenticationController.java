@@ -1,18 +1,25 @@
 package com.ghoul.AmanaFund.controller;
 
-import com.ghoul.AmanaFund.service.ActivityService;
+import com.ghoul.AmanaFund.Dao.AuthenticationRequest;
+import com.ghoul.AmanaFund.Dao.GrantRoleRequest;
+import com.ghoul.AmanaFund.Dao.RegistrationRequest;
 import com.ghoul.AmanaFund.entity.ActivityLog;
-import com.ghoul.AmanaFund.Dao.*;
-import com.ghoul.AmanaFund.service.AuthenticationService;
 import com.ghoul.AmanaFund.entity.Users;
+import com.ghoul.AmanaFund.security.JwtService;
+import com.ghoul.AmanaFund.service.ActivityService;
+import com.ghoul.AmanaFund.service.AuthenticationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -21,62 +28,120 @@ import java.util.List;
 @Tag(name = "Authentication")
 @RequiredArgsConstructor
 public class AuthenticationController {
-    private final AuthenticationService service;
-    private final ActivityService actService;
+
+    private final AuthenticationService authService;
+    private final ActivityService activityService;
+    private final JwtService jwtService;
+
     @PostMapping("/register")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public ResponseEntity<?> registerUser(@Valid @RequestBody RegistrationRequest request) throws MessagingException {
-    if(service.registerUser(request))
-        actService.save(new ActivityLog("new user","registring user for first time","nothing", "Register User",LocalDateTime.now(),service.findUserByEmail(request.getEmail())));
-    else
-        actService.save(new ActivityLog("new user","registring user for first time","nothing", "Register User",LocalDateTime.now(),service.findUserByEmail(request.getEmail())));
-        return new ResponseEntity<>(HttpStatus.ACCEPTED);
-    }
-    @PostMapping("/Promote")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public ResponseEntity<?> grantRole(@Valid @RequestBody GrantRoleRequest grantRoleRequest) throws MessagingException {
-        if(service.grantRole(grantRoleRequest.getEmail(),grantRoleRequest.getRole()))
-            actService.save(new ActivityLog("new user","registring user for first time","nothing", "Register User",LocalDateTime.now(),service.findUserByEmail(grantRoleRequest.getEmail())));
-        else
-            actService.save(new ActivityLog("new user","registring user for first time","nothing", "Register User",LocalDateTime.now(),service.findUserByEmail(grantRoleRequest.getEmail())));
-        return new ResponseEntity<>(HttpStatus.ACCEPTED);
-    }
-    @PostMapping("/Demote")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public ResponseEntity<?> DeleteRole(@Valid @RequestBody GrantRoleRequest grantRoleRequest) throws MessagingException {
-        service.deleteRoleAsignedToUser(grantRoleRequest.getEmail(),grantRoleRequest.getRole());
-        return new ResponseEntity<>(HttpStatus.ACCEPTED);
-    }
-    @DeleteMapping("/Delete")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public ResponseEntity<?> DeleteUser( @RequestBody Users user) throws MessagingException {
-        service.deleteUser(user);
-        return new ResponseEntity<>(HttpStatus.ACCEPTED);
-    }
-    @GetMapping("/users")
-    public ResponseEntity<List<Users>> showUsers() throws MessagingException {
-        List<Users> users = service.getAllUsers();
-        return ResponseEntity.ok(users);
+    public ResponseEntity<Void> createUser(@Valid @RequestBody RegistrationRequest request) throws MessagingException {
+  authService.registerUser(request);
+        activityService.save(new ActivityLog("User Creation", "User Registration succeeded", LocalDateTime.now(), null,null));
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @PostMapping("/Promote")
+    public ResponseEntity<Void> grantRoleUser(@Valid @RequestBody GrantRoleRequest grantRoleRequest, @RequestHeader("Authorization") String token) throws MessagingException {
+        Users adminUser = extractUser(token);
+        authService.grantRole(grantRoleRequest.getEmail(), grantRoleRequest.getRole());
+        logActivity("User Promotion", "User Promotion succeeded", adminUser);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @PostMapping("/Demote")
+    public ResponseEntity<Void> deleteRoleUser(@Valid @RequestBody GrantRoleRequest grantRoleRequest, @RequestHeader("Authorization") String token) throws MessagingException {
+        Users adminUser = extractUser(token);
+        authService.deleteRoleAsignedToUser(grantRoleRequest.getEmail(), grantRoleRequest.getRole());
+        logActivity("User Demotion", "User Demotion succeeded", adminUser);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @DeleteMapping("/Delete")
+    public ResponseEntity<Void> deleteUser(@RequestBody Users user, @RequestHeader("Authorization") String token) {
+        Users adminUser = extractUser(token);
+        authService.deleteUser(user);
+        logActivity("User Delete", "User Delete succeeded", adminUser);
+        return ResponseEntity.status(HttpStatus.OK).build();
+    }
+
+    @GetMapping("/users")
+    public ResponseEntity<Page<Users>> showUsers(
+            @RequestHeader("Authorization") String token,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) throws MessagingException {
+        Users adminUser = extractUser(token);
+        Page<Users> users = authService.getAllUsersPaginated(page, size);
+        logActivity("Users Preview", "User Preview succeeded", adminUser);
+        return ResponseEntity.ok(users);
+    }
     @PutMapping("/Modify")
-    @ResponseStatus(HttpStatus.ACCEPTED)
-    public ResponseEntity<?> ModifyUser( @RequestBody Users user) throws MessagingException {
-        service.modifyUser(user);
-        return new ResponseEntity<>(HttpStatus.ACCEPTED);
+    public ResponseEntity<Void> modifyUser(@RequestBody Users user, @RequestHeader("Authorization") String token) throws MessagingException {
+        Users adminUser = extractUser(token);
+        authService.modifyUser(user);
+        logActivity("User Modification", "User Modification succeeded", adminUser);
+        return ResponseEntity.status(HttpStatus.OK).build();
     }
 
     @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> authenticate(
-            @RequestBody AuthenticationRequest request
-    ) {
-        return ResponseEntity.ok(service.authenticate(request));
+    public ResponseEntity<AuthenticationResponse> authenticateUser(@RequestBody AuthenticationRequest request) {
+        try {
+            authService.authenticate(request);
+            Users user = authService.getUserByEmail(request.getEmail());
+            logActivity("Authentication", "User Authentication succeeded", user);
+            return ResponseEntity.ok(new AuthenticationResponse("Authentication succeeded. Please check your email for the 2FA code."));
+        } catch (BadCredentialsException e) {
+            logActivity("Authentication", "User Authentication failed", authService.getUserByEmail(request.getEmail()));
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthenticationResponse("Invalid credentials"));
+        } catch (MessagingException e) {
+            throw new RuntimeException(e);
+        }
     }
-    @GetMapping("/activate-account")
-    public void confirm(
-            @RequestParam String token
-    ) throws MessagingException {
-        service.activateAccount(token);
+
+    @GetMapping("/F2A")
+    public ResponseEntity<AuthenticationResponse> verify2FACode(@RequestParam String token) throws MessagingException {
+        try {
+            AuthenticationResponse response = authService.activateAccount(token);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthenticationResponse("Invalid 2FA code or expired token"));
+        }
+    }
+
+
+
+    private Users extractUser(String token) {
+        String email = jwtService.extractUsername(token.replace("Bearer ", ""));
+        return authService.getUserByEmail(email);
+    }
+
+    private void logActivity(String action, String description, Users user) {
+        activityService.save(new ActivityLog(action, description, LocalDateTime.now(), user, null));
+    }
+    @GetMapping("/search")
+    public ResponseEntity<Page<Users>> searchUsers(
+            @RequestParam(required = false) String firstName,
+            @RequestParam(required = false) String lastName,
+            @RequestParam(required = false) String email,
+            @RequestParam(required = false) Integer age,
+            @RequestParam(required = false) String phoneNumber,
+            @RequestParam(required = false) LocalDate dateOfBirth,
+            @RequestParam(required = false) Boolean enabled,
+            @RequestParam(required = false) List<String> sortBy,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Page<Users> users = authService.searchUsersPaginated(firstName, lastName, email, age, phoneNumber, dateOfBirth, enabled, sortBy, page, size);
+        return ResponseEntity.ok(users);
+    }
+    @GetMapping("/generateUserReport")
+    public ResponseEntity<Void> generateUserReport(
+            @RequestParam(required = false) String directoryPath,
+            @RequestParam(required = false) String fileName) throws IOException {
+
+        String filePath = authService.generateUserReport(directoryPath, fileName);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
 }
