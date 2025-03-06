@@ -18,6 +18,8 @@ public class PoliceService implements IpoliceService{
     private IpoliceRepository ipoliceRepository;
     @Override
     public Police addPolice(Police police) {
+        if (police==null)
+            throw new RuntimeException("police should not be null");
         return ipoliceRepository.save(police);
     }
 
@@ -28,16 +30,20 @@ public class PoliceService implements IpoliceService{
 
     @Override
     public Police updatePolice(Police police) {
+        if (police==null)
+            throw new RuntimeException("police should not be null");
         return ipoliceRepository.save(police);
     }
 
     @Override
     public Police retrievePolice(Long idPolice) {
-        return ipoliceRepository.findById(idPolice).orElse(null);
+        return ipoliceRepository.findById(idPolice).orElseThrow(() -> new RuntimeException("idPolice not found"));
     }
 
     @Override
     public void removePolice(Long idPolice) {
+        if (idPolice==null)
+            throw new RuntimeException("idPolice should not be null");
         ipoliceRepository.deleteById(idPolice);
     }
 

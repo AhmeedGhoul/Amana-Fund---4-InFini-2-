@@ -19,6 +19,8 @@ public class PersonController {
     @PostMapping("/add_person")
     public Person addPerson(@RequestBody Person person)
     {
+        if (person==null)
+            throw new RuntimeException("Person should have value");
         return personService.addGPerson(person);
     }
     @GetMapping("/getall_person")
@@ -29,6 +31,8 @@ public class PersonController {
     @PutMapping("/update_person")
     public Person updatePerson(@RequestBody Person person)
     {
+        if (person==null)
+            throw new RuntimeException("Person should have value");
         return personService.updatePerson(person);
     }
     @DeleteMapping("/remove_person/{id}")

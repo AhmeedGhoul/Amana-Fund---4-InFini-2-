@@ -23,7 +23,9 @@ public class Police {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idPolice;
-    private Date start;
+    @NotNull(message = "Status should have value")
+    private boolean Active=true;
+    private Date start = new Date();
     @NotNull(message = "End date is required")
     @Future(message = "End date must be in the future")
     @Temporal(TemporalType.DATE)
@@ -37,8 +39,6 @@ public class Police {
     @Future(message = "Renewal date must be in the future")
     @Temporal(TemporalType.DATE)
     private Date renewalDate;
-    @OneToMany(cascade = CascadeType.ALL,mappedBy = "police")
-    private Set<Garantie> Garanties;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private Users user;

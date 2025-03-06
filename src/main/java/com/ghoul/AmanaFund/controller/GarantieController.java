@@ -1,11 +1,11 @@
 package com.ghoul.AmanaFund.controller;
 
+import com.ghoul.AmanaFund.entity.Garantie;
+import com.ghoul.AmanaFund.service.GarantieService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import com.ghoul.AmanaFund.entity.*;
-import com.ghoul.AmanaFund.service.*;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ import java.util.List;
 
 public class GarantieController {
     @Autowired
-    private GrantieService garantieService;
+    private GarantieService garantieService;
     @PostMapping("/add_garantie")
     public Garantie addGarantie(@RequestBody Garantie garantie)
     {

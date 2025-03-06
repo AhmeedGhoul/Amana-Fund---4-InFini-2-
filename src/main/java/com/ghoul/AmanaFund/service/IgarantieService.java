@@ -1,5 +1,7 @@
 package com.ghoul.AmanaFund.service;
+
 import com.ghoul.AmanaFund.entity.Garantie;
+import com.ghoul.AmanaFund.entity.Police;
 
 import java.util.List;
 
@@ -10,4 +12,3 @@ public interface IgarantieService {
     Garantie retrieveGarantie(Long idGarantie);
     void removeGarantie(Long idGarantie);
 }
-

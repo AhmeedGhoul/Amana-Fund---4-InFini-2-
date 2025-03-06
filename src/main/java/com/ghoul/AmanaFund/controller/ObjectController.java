@@ -1,9 +1,7 @@
 package com.ghoul.AmanaFund.controller;
 
 import com.ghoul.AmanaFund.entity.ObjectG;
-import com.ghoul.AmanaFund.entity.Person;
 import com.ghoul.AmanaFund.service.ObjectService;
-import com.ghoul.AmanaFund.service.PersonService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

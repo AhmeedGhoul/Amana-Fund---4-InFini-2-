@@ -2,6 +2,7 @@ package com.ghoul.AmanaFund.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
