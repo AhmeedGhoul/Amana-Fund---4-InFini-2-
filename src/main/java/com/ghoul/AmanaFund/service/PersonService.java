@@ -19,10 +19,6 @@ import java.util.Optional;
 public class PersonService implements IpersonService{
     @Autowired
     private IpersonRepository ipersonRepository;
-    @Autowired
-    private GarantieService garantieService;
-    @Autowired
-    private IpoliceRepository policeRepository;
     @Override
     public Person addGPerson(Person person) {
         if (person==null)

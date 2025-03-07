@@ -25,6 +25,5 @@ public class Garantie {
     private String Documents;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "police_id", nullable = false)
-    @JsonIgnore
     private Police police;
 }
