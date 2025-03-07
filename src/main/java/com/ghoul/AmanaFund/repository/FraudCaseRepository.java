@@ -15,4 +15,5 @@ public interface FraudCaseRepository extends JpaRepository<FraudCases,Integer>, 
 
     List<FraudCases> findByResponsibleUserAndCaseStatus(Users responsibleUser, CaseStatus caseStatus);
     List<FraudCases> findByResponsibleUser (Users responsibleUser);
+
 }

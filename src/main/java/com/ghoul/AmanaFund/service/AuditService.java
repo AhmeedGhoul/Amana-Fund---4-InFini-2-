@@ -141,5 +141,10 @@ public class AuditService {
         return filePath;
     }
 
-
+    public long getTotalAudits() {
+        return auditServiceRepository.count();
+    }
+    public long getAuditsWithFraudCases() {
+        return auditServiceRepository.findAll().stream().filter(audit -> !audit.getFraudCases().isEmpty()).count();
+    }
 }

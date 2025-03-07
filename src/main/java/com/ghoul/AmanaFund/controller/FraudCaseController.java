@@ -111,4 +111,5 @@ public class FraudCaseController {
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+
 }

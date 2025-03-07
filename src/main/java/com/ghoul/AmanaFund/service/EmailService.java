@@ -69,6 +69,29 @@ mailSender.send(message);
         messageHelper.setText(templateEngine.process(templateName, context), true);
         mailSender.send(message);
     }
+    @Async
+    public void sendEmail(String to, EmailTemplateName emailTemplate, String confirmationUrl, String activationCode, String subject) throws MessagingException {
+        String templateName;
+        if(emailTemplate==null){
+            templateName = "confirm-email";
+        }
+        else {
+            templateName = emailTemplate.name();
+        }
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper messageHelper = new MimeMessageHelper(message,MULTIPART_MODE_MIXED,UTF_8.name());
+        Map<String, Object> properties = new HashMap<>();
+        properties.put("confirmationUrl", confirmationUrl);
+        properties.put("activationCode", activationCode);
+        Context context = new Context();
+        context.setVariables(properties);
+        messageHelper.setFrom("ahmed.ghoul@esprit.tn");
+        messageHelper.setTo(to);
+        messageHelper.setSubject(subject);
+        messageHelper.setText(templateEngine.process(templateName, context), true);
+
+        mailSender.send(message);
+    }
 
 
 }

@@ -21,9 +21,10 @@ public class GroqService {
         StringBuilder logDetails = new StringBuilder("Analyze these system logs and detect any suspicious activity.\n");
         for (ActivityLog log : logs) {
             logDetails.append("Timestamp: ").append(log.getActivityDate())
-                    .append(", User: ").append("user")
+                    .append(", User: ").append(log.getUser())
                     .append(", Action: ").append(log.getActivityDescription())
-                    .append(", IP: ").append(log.getActivityId())
+                    .append(", IP: ").append(log.getIpAddress())
+                    .append(", Country: ").append(log.getCountry())
                     .append("\n");
         }
 

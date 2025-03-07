@@ -23,6 +23,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -92,5 +94,13 @@ public class ActivityService {
         }
 
         return filePath;
+    }
+    public long getTotalActivities() {
+        return activityLogRepository.count();
+    }
+
+    public Map<String, Long> getMostCommonActivity() {
+        return activityLogRepository.findAll().stream()
+                .collect(Collectors.groupingBy(ActivityLog::getActivityName, Collectors.counting()));
     }
 }

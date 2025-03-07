@@ -91,7 +91,52 @@ public class    AuthenticationService {
         sendValidationEmail(user);
         //sendValidationSms(user);
     }
+    public void resetPassword(String email) throws MessagingException {
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Email not found"));
+        sendResetEmail(user);
+        //sendValidationSms(user);
 
+    }
+
+    private void sendResetEmail(Users user) throws MessagingException {
+        var newToken = generateAndSaveActivationToken(user);
+        String activationUrl = "https://your-app.com/reset-password?token=" + newToken;
+
+        emailService.sendEmail(
+                user.getEmail(),
+                EmailTemplateName.RESET_PASSWORD,
+                activationUrl,
+                newToken,
+                "Password Reset"
+        );
+    }
+
+    public AuthenticationResponse ResetPassword(String token, String password) {
+        Token savedToken = tokenRepository.findByToken(token)
+                .orElseThrow(() -> new RuntimeException("Invalid token"));
+
+        if (LocalDateTime.now().isAfter(savedToken.getExpiresAt())) {
+            throw new RuntimeException("Token has expired. Request a new reset link.");
+        }
+
+        Users user = userRepository.findById(savedToken.getUser().getId())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        user.setPassword(passwordEncoder.encode(password));
+        userRepository.save(user);
+
+        savedToken.setValidatedAt(LocalDateTime.now());
+        tokenRepository.save(savedToken);
+
+        var claims = new HashMap<String, Object>();
+        claims.put("fullName", user.getName());
+        var jwtToken = jwtService.generateToken(claims, user);
+
+        return AuthenticationResponse.builder()
+                .token(jwtToken)
+                .build();
+    }
     public AuthenticationResponse activateAccount(String token) throws MessagingException {
         Token savedToken = tokenRepository.findByToken(token)
                 .orElseThrow(() -> new RuntimeException("Invalid token"));
@@ -233,6 +278,7 @@ public class    AuthenticationService {
 
 
     }
+
     public void sendValidationSms(Users user) {
         var newToken = generateAndSaveActivationToken(user);
 
@@ -313,5 +359,13 @@ public class    AuthenticationService {
         }
         return filePath;
     }
+    public long getTotalUsers() {
+        return userRepository.count();
+    }
 
+    public long getLockedAccountsPercentage() {
+        long totalUsers = userRepository.count();
+        long lockedUsers = userRepository.countByEnabled(true);
+        return (lockedUsers * 100) / totalUsers;
+    }
 }

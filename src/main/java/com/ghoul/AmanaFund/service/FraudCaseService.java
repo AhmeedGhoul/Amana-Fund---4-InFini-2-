@@ -4,6 +4,8 @@ import com.ghoul.AmanaFund.entity.CaseStatus;
 import com.ghoul.AmanaFund.entity.CaseType;
 import com.ghoul.AmanaFund.entity.FraudCases;
 import com.ghoul.AmanaFund.entity.Users;
+import com.ghoul.AmanaFund.repository.ActivityLogRepository;
+import com.ghoul.AmanaFund.repository.AuditServiceRepository;
 import com.ghoul.AmanaFund.repository.FraudCaseRepository;
 import com.ghoul.AmanaFund.specification.CaseSpecification;
 import lombok.RequiredArgsConstructor;
@@ -25,11 +27,16 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class FraudCaseService {
     private final FraudCaseRepository fraudCaseRepository;
+    private final ActivityLogRepository activityLogRepository;
+    private final AuditServiceRepository auditServiceRepository;
+
     public void save(FraudCases fraudCases, Users user) {
         fraudCases.setResponsibleUser(user);
     fraudCaseRepository.save(fraudCases);
@@ -124,6 +131,13 @@ public class FraudCaseService {
         }
         return filePath;
     }
+    public long getTotalFraudCases() {
+        return fraudCaseRepository.count();
+    }
 
+    public Map<CaseType, Long> getFraudCasesByType() {
+        return fraudCaseRepository.findAll().stream()
+                .collect(Collectors.groupingBy(FraudCases::getCaseType, Collectors.counting()));
+    }
 
 }
