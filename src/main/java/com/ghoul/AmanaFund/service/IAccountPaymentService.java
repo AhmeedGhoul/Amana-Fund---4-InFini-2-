@@ -11,9 +11,9 @@ public interface IAccountPaymentService {
     AccountPayment AddAccountPayment(AccountPayment accountPayment);
     List<AccountPayment> retrieveAccountPayment();
     Page<AccountPayment> retrieveAccountPayment(Pageable pageable);
-    AccountPayment updateAccountPayment(AccountPayment accountpayment);
-    AccountPayment retrieveAccountPayment(Integer idAccountPayment);
+    AccountPayment updateAccountPayment(AccountPayment accountPayment);
     void removeAccountPayment(Integer idAccountPayment);
+    AccountPayment retrieveAccountPayment(Integer idAccountPayment);
     List<AccountPayment> findByAgencyName(String agencyName);
     List<AccountPayment> findByPaymentDateBetween(LocalDate startDate, LocalDate endDate);
 }
