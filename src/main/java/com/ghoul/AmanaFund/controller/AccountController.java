@@ -2,6 +2,9 @@ package com.ghoul.AmanaFund.controller;
 
 import com.ghoul.AmanaFund.entity.Account;
 import com.ghoul.AmanaFund.entity.AccountType;
+import com.ghoul.AmanaFund.entity.Users;
+import com.ghoul.AmanaFund.security.JwtService;
+import com.ghoul.AmanaFund.service.AuthenticationService;
 import com.ghoul.AmanaFund.service.IAccountService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -14,15 +17,22 @@ import java.util.List;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("Account")
+    @RequestMapping("Account")
 public class AccountController {
     IAccountService accountService;
+    private final JwtService jwtService;
+    private final AuthenticationService authService;
 
     @PostMapping("/addaccount")
-    public Account ajouterAccount(@Valid @RequestBody Account account) {
+    public Account ajouterAccount(@Valid @RequestBody Account account, @RequestHeader("Authorization") String token) {
+        Users adminUser = extractUser(token);
+        account.setUser(adminUser);
         return accountService.AddAccount(account);
     }
-
+    private Users extractUser(String token) {
+        String email = jwtService.extractUsername(token.replace("Bearer ", ""));
+        return authService.getUserByEmail(email);
+    }
     @GetMapping("dispaccount")
     public List<Account> retrieveBlocs() {
         return accountService.retrieveAccount();

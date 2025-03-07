@@ -1,7 +1,9 @@
 package com.ghoul.AmanaFund.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -12,9 +14,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.security.Principal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Setter
@@ -23,25 +25,51 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Getter
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @EntityListeners(AuditingEntityListener.class)
 public class Users implements UserDetails, Principal {
 
     @Id
-    private Integer id;
+    @GeneratedValue
+    private int id;
 
+    @NotBlank(message = "First name is required")
     private String firstName;
+
+    @NotBlank(message = "Last name is required")
     private String lastName;
 
+    @Email(message = "Invalid email format")
+    @NotBlank(message = "Email is required")
     @Column(unique = true)
     private String email;
-    private int Age;
-    private String Address;
-    private com.ghoul.AmanaFund.entity.CivilStatus CivilStatus;
-    private String password;
 
+    @Min(value = 18, message = "Age must be at least 18")
+    @Max(value = 150, message = "Age cannot be greater than 150")
+    private int age;
+
+    @NotBlank(message = "Address is required")
+    private String address;
+
+    @NotNull(message = "Civil Status is required")
+    private CivilStatus civilStatus;
+
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, message = "Password must be at least 8 characters long")
+    private String password;
+    @NotBlank(message = "Phone Number is required")
+    @Pattern(regexp = "^\\+216\\d{8}$", message = "Phone number must start with +216 and be exactly 8 digits long")
+    private String phoneNumber;
+
+
+
+    @Past(message = "Date of birth must be in the past")
     private LocalDate dateOfBirth;
+
+
     private Boolean enabled;
-    private Boolean accountLocked=true;
+    private Boolean accountDeleted=false;
+    private Boolean accountLocked;
 
     @CreatedDate
     @Column(updatable = false, nullable = false)
@@ -67,13 +95,11 @@ public class Users implements UserDetails, Principal {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Account> accounts;
     @JsonIgnore
-    @ManyToMany(fetch = FetchType.EAGER)
-    private List<Role> roles = new ArrayList<>();  // Initialize to an empty list
-
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST, CascadeType.REFRESH})
+    private List<Role> roles;
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH})
     @JsonIgnore
-    private List<ActivityLog> activityLogs= new ArrayList<>();
+    private List<ActivityLog> activityLogs;
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return this.roles.stream().map(role -> new SimpleGrantedAuthority(role.getName())).collect(Collectors.toList());
@@ -116,6 +142,13 @@ public class Users implements UserDetails, Principal {
 
     public String fullName() {
         return firstName + " " + lastName;
+    }
+    @OneToMany(mappedBy = "user")
+    private List<Sinistre> sinistres;
+
+    @Transient
+    public long getNumberOfSinistres() {
+        return sinistres != null ? sinistres.size() : 0;
     }
 
 }
