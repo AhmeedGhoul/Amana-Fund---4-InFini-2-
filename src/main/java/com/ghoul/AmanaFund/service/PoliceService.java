@@ -11,9 +11,14 @@ import org.springframework.stereotype.Service;
 import com.ghoul.AmanaFund.entity.Police;
 
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Pageable;
 
@@ -76,6 +81,60 @@ public class PoliceService implements IpoliceService{
     public List<Police> searchPolice(Date start, Double amount, Long id) {
         return ipoliceRepository.searchPolice(start, amount, id);
     }
+
+    public Double calculateTotalAmountPaid(Long policeId) {
+        Optional<Police> policeOptional = ipoliceRepository.findById(policeId);
+
+        if (policeOptional.isEmpty()) {
+            throw new RuntimeException("Police not found");
+        }
+
+        Police police = policeOptional.get();
+
+        if (police.getStart() == null || police.getEnd() == null ||
+                police.getAmount() == null || police.getFrequency() == null) {
+            throw new IllegalStateException("Start date, end date, amount, and frequency must be set");
+        }
+
+        // Convert java.util.Date to LocalDate safely
+        LocalDate startDate = convertToLocalDate(police.getStart());
+        LocalDate endDate = convertToLocalDate(police.getEnd());
+
+        long totalPayments = 0;
+
+        switch (police.getFrequency()) {
+            case MONTHLY:
+                totalPayments = ChronoUnit.MONTHS.between(startDate, endDate);
+                break;
+            case QUARTERLY:
+                totalPayments = ChronoUnit.MONTHS.between(startDate, endDate) / 3;
+                break;
+            case HALF_YEARLY:
+                totalPayments = ChronoUnit.MONTHS.between(startDate, endDate) / 6;
+                break;
+            case YEARLY:
+                totalPayments = ChronoUnit.YEARS.between(startDate, endDate);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported frequency: " + police.getFrequency());
+        }
+
+        return totalPayments * police.getAmount();
+    }
+
+    public LocalDate convertToLocalDate(Date sqlDate) {
+        if (sqlDate == null) {
+            return null;
+        }
+
+        if (sqlDate instanceof java.sql.Date) {
+            return ((java.sql.Date) sqlDate).toLocalDate();
+        } else {
+            return sqlDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        }
+    }
+
+
 
 
 //    @Scheduled(cron = "30 40 5 * * ?")  // Runs daily at midnight

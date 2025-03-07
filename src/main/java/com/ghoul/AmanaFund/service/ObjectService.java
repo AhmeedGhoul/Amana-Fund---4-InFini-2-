@@ -5,6 +5,8 @@ import com.ghoul.AmanaFund.repository.IobjectRepository;
 import com.ghoul.AmanaFund.repository.IpersonRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -36,5 +38,10 @@ public class ObjectService implements IobjectService{
     @Override
     public void removeObjectG(Long idObjectG) {
         iobjectRepository.deleteById(idObjectG);
+    }
+
+    @Override
+    public Page<ObjectG> getAllPaginated(Pageable pageable) {
+        return iobjectRepository.findAll(pageable);
     }
 }

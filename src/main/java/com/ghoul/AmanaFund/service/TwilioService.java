@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 public class TwilioService {
 
     public static final String accountSid = "AC095115cc33bee059c417c067ccac9602";
-    public static final String authToken = "9c9c22a17036a231828f7c2690972c4d";
+    public static final String authToken = "5248831bef420b98c011ed32d7f75012";
     public static final String fromPhoneNumber = "+13372423732"; // exemple : +1234567890
 
     public void sendSms(String to, String messageBody) {

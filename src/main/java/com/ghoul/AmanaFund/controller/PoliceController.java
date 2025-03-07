@@ -30,7 +30,7 @@ import java.util.Optional;
 @RestController
 @AllArgsConstructor
 @Slf4j
-
+@RequestMapping("/police")
 public class PoliceController {
     @Autowired
     private PoliceService policeService;
@@ -122,6 +122,10 @@ public class PoliceController {
                 signatureImageStream.close();
             }
         }
+    }
+    @GetMapping("/{id}/total-amount-paid")
+    public Double getTotalAmountPaid(@PathVariable Long id) {
+        return policeService.calculateTotalAmountPaid(id);
     }
 
 }

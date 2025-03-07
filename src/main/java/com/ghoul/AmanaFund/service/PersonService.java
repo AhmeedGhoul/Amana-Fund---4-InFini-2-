@@ -9,6 +9,8 @@ import com.ghoul.AmanaFund.repository.IpoliceRepository;
 import lombok.AllArgsConstructor;
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -46,6 +48,12 @@ public class PersonService implements IpersonService{
     public void removePerson(Long idPerson) {
         ipersonRepository.deleteById(idPerson);
     }
+
+    @Override
+    public Page<Person> getAllPaginated(Pageable pageable) {
+        return ipersonRepository.findAll(pageable);
+    }
+
     public void CalculatePremium()
     {
 
