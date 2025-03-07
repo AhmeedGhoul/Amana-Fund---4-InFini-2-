@@ -1,4 +1,5 @@
 package com.ghoul.AmanaFund.controller;
+import com.ghoul.AmanaFund.repository.IpoliceRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,16 +9,20 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.ghoul.AmanaFund.entity.*;
 import com.ghoul.AmanaFund.service.*;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 
 @RestController
@@ -27,6 +32,10 @@ import java.util.List;
 public class PoliceController {
     @Autowired
     private PoliceService policeService;
+    @Autowired
+    private IpoliceRepository ipoliceRepository;
+    @Autowired
+    private PDFpoliceService pdFpoliceService;
     @PostMapping("/add_police")
     public Police addPolice(@RequestBody Police police)
     {
@@ -84,6 +93,21 @@ public class PoliceController {
             // Log the exception
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+    @GetMapping("/{id}/contract")
+    public ResponseEntity<byte[]> generateContract(@PathVariable Long id) throws IOException {
+        Optional<Police> policeOpt = ipoliceRepository.findById(id);
+        if (policeOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // ✅ Call the PDF generation function
+        byte[] pdfBytes = pdFpoliceService.generatePoliceContract(policeOpt.get());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=contract_" + id + ".pdf")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
     }
 
 }
