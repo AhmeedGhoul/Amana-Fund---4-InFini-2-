@@ -127,5 +127,11 @@ public class PoliceController {
     public Double getTotalAmountPaid(@PathVariable Long id) {
         return policeService.calculateTotalAmountPaid(id);
     }
+    @GetMapping("/{policeId}/next-payment")
+    public Date getNextPaymentDate(
+            @PathVariable Long policeId,
+            @RequestParam("lastPaymentDate") Date lastPaymentDate) {
+        return policeService.getNextPaymentDate(policeId, lastPaymentDate);
+    }
 
 }
