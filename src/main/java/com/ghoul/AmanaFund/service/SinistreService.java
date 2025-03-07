@@ -22,7 +22,12 @@ public class SinistreService implements  ISinistreService{
     private final UserRepository userRepository;
     @Override
     public Sinistre add(Sinistre sinistre) {
-        return sinistreRepository.save(sinistre);
+        Sinistre savedSinistre = sinistreRepository.save(sinistre);
+
+        // Appelle la méthode pour envoyer un SMS après l'ajout du sinistre
+        sendMessage(savedSinistre);
+
+        return savedSinistre;
     }
 
     @Override
@@ -114,5 +119,26 @@ public class SinistreService implements  ISinistreService{
         }
         return 2; // Risque élevé
     }
+    private void sendMessage(Sinistre sinistre) {
+        String toPhoneNumber = "+21693107541"; // Make sure this number is correct
+        String messageBody = "Un nouveau sinistre a été ajouté. ID: " + sinistre.getIdSinistre() + ", Montant: " + sinistre.getClaimAmount();
+
+        System.out.println("Tentative d'envoi de SMS à " + toPhoneNumber + " avec le message : " + messageBody);
+
+        // Send SMS
+        smSsinistre.sendSms(toPhoneNumber, messageBody);
+    }
+
+// Ajout dans SinistreService
+
+    public List<Sinistre> getSinistresByUserId(Long userId) {
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
+
+        // Récupérer tous les sinistres associés à cet utilisateur
+        return sinistreRepository.findByUser(user);
+    }
+
+
 
 }

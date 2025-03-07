@@ -3,7 +3,9 @@ package com.ghoul.AmanaFund.controller;
 import com.ghoul.AmanaFund.entity.ContratReassurance;
 import com.ghoul.AmanaFund.entity.Sinistre;
 import com.ghoul.AmanaFund.service.ISinistreService;
+import com.ghoul.AmanaFund.service.SMSsinistre;
 import com.ghoul.AmanaFund.service.SinistreService;
+import com.ghoul.AmanaFund.service.excelSinistre;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -21,6 +23,8 @@ import java.util.List;
 @RequestMapping("Sinitre")
 public class SinitreController {
     private final ISinistreService sinistreService;
+    private final SMSsinistre smssinistre;
+    private final excelSinistre excelSinistre;
 
     @PostMapping("/add")
     public Sinistre addSinistre(@Valid @RequestBody Sinistre sinistre) {
@@ -89,6 +93,36 @@ public class SinitreController {
         }
 
         return ResponseEntity.ok("Le risque de l'utilisateur est : " + risqueMessage);
+    }
+    @GetMapping("/pdfsinistre/{id}")
+    public ResponseEntity<byte[]> downloadSinistrePdf(@PathVariable Long id) {
+        try {
+            byte[] pdfBytes = pdfService.generateSinistrePdf(id);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=sinistre_" + id + ".pdf")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(pdfBytes);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(null);
+        }
+    }
+    @PostMapping("/send")
+    public String sendSms(@RequestParam String toPhoneNumber, @RequestParam String messageBody) {
+        smssinistre.sendSms(toPhoneNumber, messageBody);
+        return "SMS envoyé à " + toPhoneNumber;
+    }
+    @GetMapping("/excel/user/{userId}")
+    public ResponseEntity<byte[]> downloadSinistresExcelForUser(@PathVariable Long userId) throws IOException {
+        try {
+            byte[] excelBytes = excelSinistre.generateSinistresExcelForUser(userId);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=sinistres_user_" + userId + ".xlsx")
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(excelBytes);
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body(null);
+        }
+
     }
 
 }
