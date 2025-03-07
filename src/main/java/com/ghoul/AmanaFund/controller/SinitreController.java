@@ -2,19 +2,19 @@ package com.ghoul.AmanaFund.controller;
 
 import com.ghoul.AmanaFund.entity.ContratReassurance;
 import com.ghoul.AmanaFund.entity.Sinistre;
-import com.ghoul.AmanaFund.service.ISinistreService;
-import com.ghoul.AmanaFund.service.SMSsinistre;
-import com.ghoul.AmanaFund.service.SinistreService;
-import com.ghoul.AmanaFund.service.excelSinistre;
+import com.ghoul.AmanaFund.service.*;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -25,6 +25,7 @@ public class SinitreController {
     private final ISinistreService sinistreService;
     private final SMSsinistre smssinistre;
     private final excelSinistre excelSinistre;
+    private final PdfService pdfService;
 
     @PostMapping("/add")
     public Sinistre addSinistre(@Valid @RequestBody Sinistre sinistre) {

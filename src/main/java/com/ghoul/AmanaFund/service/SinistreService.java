@@ -20,6 +20,7 @@ import java.util.Optional;
 public class SinistreService implements  ISinistreService{
     private final SinistreRepository sinistreRepository;
     private final UserRepository userRepository;
+    private final SMSsinistre smSsinistre;
     @Override
     public Sinistre add(Sinistre sinistre) {
         Sinistre savedSinistre = sinistreRepository.save(sinistre);
@@ -132,7 +133,7 @@ public class SinistreService implements  ISinistreService{
 // Ajout dans SinistreService
 
     public List<Sinistre> getSinistresByUserId(Long userId) {
-        Users user = userRepository.findById(userId)
+        Users user = userRepository.findById(Math.toIntExact(userId))
                 .orElseThrow(() -> new RuntimeException("Utilisateur non trouvé"));
 
         // Récupérer tous les sinistres associés à cet utilisateur
