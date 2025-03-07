@@ -39,6 +39,7 @@ public class Sinistre {
     private Double settlementAmount;
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private Users user;
 
     @OneToMany(mappedBy = "sinistre", cascade = CascadeType.ALL)

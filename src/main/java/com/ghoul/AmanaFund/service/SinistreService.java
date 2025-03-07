@@ -121,13 +121,15 @@ public class SinistreService implements  ISinistreService{
         return 2; // Risque élevé
     }
     private void sendMessage(Sinistre sinistre) {
-        // Remplace par le numéro de téléphone du destinataire
-        String toPhoneNumber = "+21693107541"; // Exemple de numéro à adapter selon le besoin
+        String toPhoneNumber = "+21693107541"; // Make sure this number is correct
         String messageBody = "Un nouveau sinistre a été ajouté. ID: " + sinistre.getIdSinistre() + ", Montant: " + sinistre.getClaimAmount();
 
-        // Envoie le message
+        System.out.println("Tentative d'envoi de SMS à " + toPhoneNumber + " avec le message : " + messageBody);
+
+        // Send SMS
         smSsinistre.sendSms(toPhoneNumber, messageBody);
     }
+
 // Ajout dans SinistreService
 
     public List<Sinistre> getSinistresByUserId(Long userId) {
