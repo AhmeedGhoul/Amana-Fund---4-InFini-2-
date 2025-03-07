@@ -8,16 +8,18 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.graphics.color.PDColor;
 import org.apache.pdfbox.pdmodel.graphics.color.PDDeviceRGB;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.springframework.stereotype.Service;
 
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
         import java.io.IOException;
+import java.io.InputStream;
 
 @Service
 public class PDFpoliceService {
 
-    public byte[] generatePoliceContract(Police police) throws IOException {
+    public byte[] generatePoliceContract(Police police, InputStream signatureImageStream) throws IOException {
         try (PDDocument document = new PDDocument()) {
             PDPage page = new PDPage(PDRectangle.A4);
             document.addPage(page);
@@ -29,35 +31,35 @@ public class PDFpoliceService {
                 float yPosition = yStart;
 
                 // Define colors
-                PDColor titleColor = new PDColor(new float[]{0.0f, 0.4f, 0.8f}, PDDeviceRGB.INSTANCE); // Blue
-                PDColor lineColor = new PDColor(new float[]{0.8f, 0.8f, 0.8f}, PDDeviceRGB.INSTANCE); // Light gray
-                PDColor labelColor = new PDColor(new float[]{0.2f, 0.2f, 0.2f}, PDDeviceRGB.INSTANCE); // Dark gray
+                PDColor titleColor = new PDColor(new float[]{0.0f, 0.4f, 0.8f}, PDDeviceRGB.INSTANCE);
+                PDColor lineColor = new PDColor(new float[]{0.8f, 0.8f, 0.8f}, PDDeviceRGB.INSTANCE);
+                PDColor labelColor = new PDColor(new float[]{0.2f, 0.2f, 0.2f}, PDDeviceRGB.INSTANCE);
 
                 // Title Section
                 contentStream.setNonStrokingColor(titleColor);
-                contentStream.setFont(PDType1Font.HELVETICA_BOLD, 20); // Larger font
+                contentStream.setFont(PDType1Font.HELVETICA_BOLD, 20);
                 contentStream.beginText();
                 contentStream.newLineAtOffset(margin, yPosition);
                 contentStream.showText("Insurance Policy Contract");
                 contentStream.endText();
 
                 // Draw a line under the title
-                yPosition -= 15; // Increased spacing
+                yPosition -= 15;
                 contentStream.setStrokingColor(lineColor);
-                contentStream.setLineWidth(1.5f); // Thicker line
+                contentStream.setLineWidth(1.5f);
                 contentStream.moveTo(margin, yPosition);
                 contentStream.lineTo(page.getMediaBox().getWidth() - margin, yPosition);
                 contentStream.stroke();
 
                 // Move below the line
-                yPosition -= 40; // Increased spacing
+                yPosition -= 40;
 
                 // Policy Details Section
-                contentStream.setNonStrokingColor(labelColor); // Set color for labels
+                contentStream.setNonStrokingColor(labelColor);
                 contentStream.setFont(PDType1Font.HELVETICA_BOLD, 12);
 
                 addText(contentStream, "Policy ID: ", String.valueOf(police.getIdPolice()), margin, yPosition);
-                yPosition -= 25; // Increased spacing
+                yPosition -= 25;
                 addText(contentStream, "Amount: ", "$" + police.getAmount(), margin, yPosition);
                 yPosition -= 25;
                 addText(contentStream, "Start Date: ", police.getStart().toString(), margin, yPosition);
@@ -65,15 +67,24 @@ public class PDFpoliceService {
                 addText(contentStream, "End Date: ", police.getEnd().toString(), margin, yPosition);
                 yPosition -= 25;
                 addText(contentStream, "Frequency: ", police.getFrequency().toString(), margin, yPosition);
-                yPosition -= 40; // Increased spacing
+                yPosition -= 40;
 
                 // Signature Area
-                contentStream.setNonStrokingColor(Color.BLACK); // Reset color
+                contentStream.setNonStrokingColor(Color.BLACK);
                 contentStream.setFont(PDType1Font.HELVETICA_OBLIQUE, 12);
                 contentStream.beginText();
                 contentStream.newLineAtOffset(margin, yPosition);
-                contentStream.showText("Authorized Signature: ______________________");
+                contentStream.showText("Authorized Signature:");
                 contentStream.endText();
+
+                // Load signature image
+                if (signatureImageStream != null) {
+                    PDImageXObject signatureImage = PDImageXObject.createFromByteArray(document, signatureImageStream.readAllBytes(), "signature.png");
+                    float imageWidth = 100;
+                    float imageHeight = signatureImage.getHeight() * (imageWidth / signatureImage.getWidth());
+                    contentStream.drawImage(signatureImage, margin + 150, yPosition - imageHeight, imageWidth, imageHeight);
+                }
+
             }
 
             // Output stream

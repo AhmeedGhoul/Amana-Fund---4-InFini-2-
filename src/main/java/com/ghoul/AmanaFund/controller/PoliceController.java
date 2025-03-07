@@ -3,6 +3,7 @@ import com.ghoul.AmanaFund.repository.IpoliceRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +20,7 @@ import com.ghoul.AmanaFund.service.*;
 
 import java.awt.*;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -101,13 +103,25 @@ public class PoliceController {
             return ResponseEntity.notFound().build();
         }
 
-        // ✅ Call the PDF generation function
-        byte[] pdfBytes = pdFpoliceService.generatePoliceContract(policeOpt.get());
+        InputStream signatureImageStream = null;
+        try {
+            // Example: Loading from classpath
+            ClassPathResource resource = new ClassPathResource("signatures/signature.png"); // Adjust path
+            if (resource.exists()) {
+                signatureImageStream = resource.getInputStream();
+            }
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=contract_" + id + ".pdf")
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(pdfBytes);
+            byte[] pdfBytes = pdFpoliceService.generatePoliceContract(policeOpt.get(), signatureImageStream);
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=contract_" + id + ".pdf")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .body(pdfBytes);
+        } finally {
+            if (signatureImageStream != null) {
+                signatureImageStream.close();
+            }
+        }
     }
 
 }
