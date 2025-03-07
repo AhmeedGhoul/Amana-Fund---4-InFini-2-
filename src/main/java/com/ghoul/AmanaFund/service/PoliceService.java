@@ -77,6 +77,7 @@ public class PoliceService implements IpoliceService{
         return ipoliceRepository.searchPolice(start, amount, id);
     }
 
+
 //    @Scheduled(cron = "30 40 5 * * ?")  // Runs daily at midnight
 //    public void checkPoliceEndDates() {
 //        Date todayStart = getStartOfDay(new Date());
