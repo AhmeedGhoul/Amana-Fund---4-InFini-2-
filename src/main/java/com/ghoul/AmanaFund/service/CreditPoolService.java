@@ -20,7 +20,7 @@ public  class CreditPoolService implements ICreaditPoolService {
     private ICreaditPoolRepository iCreditPoolRepository;
 
     
-    private static final double TMM = 0.08; // TMM de 8 %
+    private static final double TMM = 8; // TMM de 8 %
 
 
     @Override
@@ -88,7 +88,7 @@ public  class CreditPoolService implements ICreaditPoolService {
             double interestRate = TMM + (riskFactor * queueNumber);
 
             // Ajouter le taux d'intérêt à la map
-            interestRates.put(contract.getId_Contract(), interestRate * 100); // Convertir en pourcentage
+            interestRates.put(contract.getId_Contract(), interestRate ); // Convertir en pourcentage
         }
 
         return interestRates;

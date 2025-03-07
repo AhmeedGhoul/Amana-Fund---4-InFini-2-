@@ -2,6 +2,8 @@ package com.ghoul.AmanaFund.controller;
 
 
 import com.ghoul.AmanaFund.entity.Payment;
+import com.ghoul.AmanaFund.service.FraudDetectionException;
+import com.ghoul.AmanaFund.service.FraudDetectionService;
 import com.ghoul.AmanaFund.service.PaymentService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,7 +16,7 @@ import java.util.List;
 @RequestMapping("/payments")
 @AllArgsConstructor
 public class PaymentController {
-
+private final FraudDetectionService fraudDetectionService ;
     private final PaymentService paymentService;
 
     // Endpoint to add a new payment
@@ -55,5 +57,16 @@ public class PaymentController {
     public ResponseEntity<Void> deletePayment(@PathVariable int id) {
         paymentService.removePayment(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+
     }
+    @PostMapping("/check")
+    public ResponseEntity<?> checkFraud(@RequestBody Payment payment) {
+        try {
+            boolean isFraudulent = fraudDetectionService.isFraudulent(payment);
+            return ResponseEntity.ok().body("{\"fraudulent\": " + isFraudulent + "}");
+        } catch (FraudDetectionException e) {
+            return ResponseEntity.status(500).body("{\"error\": \"Erreur lors de la détection de fraude\"}");
+        }
+    }
+
 }

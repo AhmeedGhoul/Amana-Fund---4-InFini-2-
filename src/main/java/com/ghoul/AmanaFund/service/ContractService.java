@@ -2,12 +2,15 @@ package com.ghoul.AmanaFund.service;
 
 import com.ghoul.AmanaFund.entity.Contract;
 import com.ghoul.AmanaFund.entity.CreditPool;
+import com.ghoul.AmanaFund.entity.Payment;
 import com.ghoul.AmanaFund.repository.IContractRepository;
 import jakarta.validation.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Service
@@ -48,11 +51,12 @@ public class ContractService implements IContractService{
     @Override
     public List<List<Integer>> getRecoveryOptionsForContract(Contract contract, CreditPool creditPool, List<Contract> allContracts) {
         List<List<Integer>> recoveryOptions = new ArrayList<>();
-        double accumulatedFunds = 0;
 
         // Simulation des mois jusqu'au nombre d'échéances
         for (int month = 1; month <= creditPool.getN_Echeance(); month++) {
-            // Accumuler les paiements de tous les contrats ce mois-ci
+            double accumulatedFunds = 0;  // Remettre à zéro pour chaque mois
+
+            // Accumuler les paiements de tous les contrats pour ce mois précis
             for (Contract c : allContracts) {
                 accumulatedFunds += c.getPayed();
             }
@@ -60,8 +64,7 @@ public class ContractService implements IContractService{
             // Vérifier si le contrat peut être récupéré ce mois-ci
             if (accumulatedFunds >= contract.getAmount()) {
                 // Ajouter ce mois comme une option de récupération
-                List<Integer> singleMonthOption = Collections.singletonList(month);
-                recoveryOptions.add(singleMonthOption);
+                recoveryOptions.add(Collections.singletonList(month));
 
                 // Ajouter des combinaisons avec les mois précédents
                 List<List<Integer>> previousOptions = new ArrayList<>(recoveryOptions);
@@ -79,4 +82,38 @@ public class ContractService implements IContractService{
     }
 
 
-}
+    @Override
+    public void refactorEcheances(Contract contract, List<Payment> payments) {
+        LocalDate today = LocalDate.now();
+        CreditPool creditPool = contract.getCreditPool();
+        int remainingEcheances = creditPool.getN_Echeance();
+        double initialAmount = contract.getAmount();
+
+        for (Payment payment : payments) {
+            if (!payment.getStatus()) {
+                LocalDate dueDate = payment.getDate_payment().toLocalDate();
+                LocalDate gracePeriodEnd = dueDate.plusDays(creditPool.getGrace_Period().toLocalDateTime().getDayOfMonth());
+
+                if (today.isAfter(gracePeriodEnd)) {
+                    long daysLate = ChronoUnit.DAYS.between(gracePeriodEnd, today);
+                    double penalty = payment.getAmount() * 0.001 * daysLate;
+                    double newAmount = payment.getAmount() + penalty;
+
+                    if (remainingEcheances > 1) {
+                        double redistributedAmount = newAmount / remainingEcheances;
+                        for (Payment p : payments) {
+                            if (!p.getStatus()) {
+                                p.setAmount(p.getAmount() + redistributedAmount);
+                            }
+                        }
+                    } else {
+                        payment.setAmount(newAmount);
+                    }
+                }
+            }
+        }
+    }
+    }
+
+
+

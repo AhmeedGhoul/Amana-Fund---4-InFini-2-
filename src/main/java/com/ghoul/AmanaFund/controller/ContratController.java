@@ -2,12 +2,19 @@ package com.ghoul.AmanaFund.controller;
 import java.util.stream.Collectors;
 import com.ghoul.AmanaFund.entity.Contract;
 import com.ghoul.AmanaFund.entity.CreditPool;
+import com.ghoul.AmanaFund.entity.Payment;
+import com.ghoul.AmanaFund.repository.IContractRepository;
+import com.ghoul.AmanaFund.repository.IPaymentRepository;
 import com.ghoul.AmanaFund.service.IContractService;
 import com.ghoul.AmanaFund.service.ICreaditPoolService;
+import com.ghoul.AmanaFund.service.IPaymentService;
+import com.ghoul.AmanaFund.service.PdfGenerationService;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,7 +27,9 @@ import java.util.List;
 public class ContratController {
 
     private final IContractService iContractService;
+    private final IPaymentService iPaymentService;
 
+    private final PdfGenerationService pdfGenerationService;
     private final ICreaditPoolService iCreaditPoolService;
     @PostMapping("/add")
     public ResponseEntity<?> addContract(@RequestBody Contract contract) {
@@ -89,8 +98,38 @@ public class ContratController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
         }
     }
+    @PostMapping("/generate-pdf")
+    public ResponseEntity<byte[]> generatePdf(@RequestBody Contract contract) {
+        // Générer le PDF
+        byte[] pdfBytes = pdfGenerationService.generatePdf(contract);
 
+        // Retourner le PDF en tant que réponse HTTP
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("filename", "contract.pdf"); // Nom du fichier
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
 
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(pdfBytes);
+    }
+
+    @PostMapping("/refactor/{contractId}")
+    public String refactorEcheances(@PathVariable int contractId) {
+        Contract contract = iContractService.retriveContract().get(contractId);
+        if (contract == null) {
+            return "Contract not found";
+        }
+
+        List<Payment> payments = iPaymentService.retrivePayments();
+        if (payments.isEmpty()) {
+            return "No payments found for this contract";
+        }
+
+        iContractService.refactorEcheances(contract, payments);
+
+        return "Echeances successfully updated";
+    }
     }
 
 

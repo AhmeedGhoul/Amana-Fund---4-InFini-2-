@@ -13,5 +13,6 @@ public interface IContractService {
     Contract updateContract (Contract contract);
     Contract retriveContractById(int id_contract);
     void removeContract(int id_contract);
-    public List<List<Integer>> getRecoveryOptionsForContract(Contract contract, CreditPool creditPool, List<Contract> allContracts) ;
+     List<List<Integer>> getRecoveryOptionsForContract(Contract contract, CreditPool creditPool, List<Contract> allContracts) ;
+     void refactorEcheances(Contract contract, List<Payment> payments);
 }

@@ -10,4 +10,5 @@ public interface IPaymentService {
     Payment updatePayment (Payment payment);
     Payment retrivePayment ( int id_payment);
     void removePayment (int id_payment);
+     Payment processPayment(Payment payment, String transactionDetails);
 }
