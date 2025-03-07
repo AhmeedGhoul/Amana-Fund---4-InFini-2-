@@ -18,6 +18,7 @@ import java.util.List;
 public class accountpaymentService implements IAccountPaymentService {
     AccountPaymentRepository accountPaymentRepository;
     AccountRepository accountRepository;
+    IAccountService accountService; // Injection de IAccountService
 
     @Transactional
     @Override
@@ -28,6 +29,7 @@ public class accountpaymentService implements IAccountPaymentService {
                     .orElseThrow(() -> new RuntimeException("Compte avec RIB " + rib + " non trouvé"));
             double newAmount = (account.getAmount() != null ? account.getAmount() : 0.0) + accountPayment.getAmount();
             account.setAmount(newAmount);
+            accountService.checkNissabStatus(account); // Vérifier le statut Nissab après mise à jour
             accountRepository.save(account);
             accountPayment.setRib(account.getRib());
         } else {
@@ -61,6 +63,7 @@ public class accountpaymentService implements IAccountPaymentService {
             double difference = newAmount - oldAmount;
             double updatedAccountAmount = (account.getAmount() != null ? account.getAmount() : 0.0) + difference;
             account.setAmount(updatedAccountAmount);
+            accountService.checkNissabStatus(account); // Vérifier le statut Nissab après mise à jour
             accountRepository.save(account);
             accountPayment.setRib(account.getRib());
         } else {
@@ -80,6 +83,7 @@ public class accountpaymentService implements IAccountPaymentService {
                     .orElseThrow(() -> new RuntimeException("Compte avec RIB " + rib + " non trouvé"));
             double updatedAmount = (account.getAmount() != null ? account.getAmount() : 0.0) - payment.getAmount();
             account.setAmount(updatedAmount);
+            accountService.checkNissabStatus(account); // Vérifier le statut Nissab après mise à jour
             accountRepository.save(account);
         }
         accountPaymentRepository.deleteById(idAccountPayment);

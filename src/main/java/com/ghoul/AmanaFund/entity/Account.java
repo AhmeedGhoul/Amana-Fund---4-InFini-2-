@@ -5,6 +5,8 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Setter
 @Entity
@@ -27,10 +29,26 @@ public class Account {
     @Positive(message = "Le montant doit être positif")
     private Double amount;
 
-    @Column(unique = true, nullable = false) // Contrainte au niveau de la base, mais pas dans la validation
-    private String rib; // Plus de @NotBlank ici
+    @Column(unique = true, nullable = false)
+    private String rib;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = true)
     private Users user;
+
+    @ElementCollection
+    @CollectionTable(name = "zakat_transactions", joinColumns = @JoinColumn(name = "account_id"))
+    @Column(name = "zakat_amount")
+    private List<Double> zakatTransactions = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(name = "zakat_transactions_dates", joinColumns = @JoinColumn(name = "account_id"))
+    @Column(name = "zakat_date")
+    private List<LocalDateTime> zakatTransactionDates = new ArrayList<>();
+
+    private LocalDateTime nissabReachedDate;
+    private boolean isEligibleForZakat;
+
+    // Taux d'intérêt déjà présent dans votre logique
+    private Double interestRate;
 }
