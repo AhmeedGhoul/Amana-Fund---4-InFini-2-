@@ -1,9 +1,22 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/Pidev?useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/pidev?useSSL=false&serverTimezone=UTC
     username: root
     password:
     driver-class-name: com.mysql.cj.jdbc.Driver
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ahmeeeedghoul@gmail.com  # Your Gmail address
+    password: nmvz dqum nuki woui
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+
 
   jpa:
     hibernate:
@@ -14,22 +27,6 @@ spring:
         format_sql: true
     database: mysql
     database-platform: org.hibernate.dialect.MySQLDialect
-
-  mail:
-    host: localhost
-    port: 1025
-    username: username
-    password: password
-    properties:
-      mail:
-        smtp:
-          trust: "*"
-        auth: true
-        starttls:
-          enabled: true
-        connectiontimeout: 5000
-        timeout: 3000
-        writetimeout: 5000
 
 application:
   security:
@@ -47,3 +44,10 @@ server:
 
 springdoc:
   default-produces-media-type: application/json
+infobip:
+  api:
+    url: "https://ypjy3d.api.infobip.com"
+    key: "73d085fc07746e1908851f3f997c844d-ac649f8a-0dfb-448f-b5c7-d2d355b7b376"
+  sender: "447491163443"
+
+

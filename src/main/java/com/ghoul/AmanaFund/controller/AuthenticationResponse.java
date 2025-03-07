@@ -1,4 +1,4 @@
-package com.ghoul.AmanaFund.Dao;
+package com.ghoul.AmanaFund.controller;
 
 import lombok.Builder;
 import lombok.Getter;

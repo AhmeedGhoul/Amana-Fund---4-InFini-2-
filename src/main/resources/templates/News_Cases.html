@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fraud Case Notification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 10px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .case-details {
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .case-list {
+            margin-bottom: 20px;
+        }
+        .case-list li {
+            padding: 8px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            margin-bottom: 5px;
+        }
+        .reminder {
+            font-size: 16px;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Unresolved Fraud Cases Notification</h1>
+    <p class="greeting" th:text="'Hello ' + ${username} + ','"></p>
+    <p>We are writing to remind you that you have unresolved fraud cases that still require your attention.</p>
+    <div class="case-details">
+        <p>Here are the details of your unsolved fraud cases:</p>
+        <ul class="case-list">
+            <li th:each="fraudCase : ${fraudCases}">
+                Fraud Case ID: <span th:text="${fraudCase.id_Fraud}"></span><br/>
+                Case Type: <span th:text="${fraudCase.caseType}"></span><br/>
+                Detection Date: <span th:text="${fraudCase.detectionDateTime}"></span><br/>
+                Status: <span th:text="${fraudCase.caseStatus}"></span>
+            </li>
+        </ul>
+    </div>
+    <div class="reminder">
+        <p>Please review and resolve these cases at your earliest convenience.</p>
+    </div>
+</div>
+</body>
+</html>
