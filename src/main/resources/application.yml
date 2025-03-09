@@ -9,3 +9,12 @@ springdoc:
 server:
   servlet:
     context-path: /api/v1/
+twilio:
+  account_sid: "YOUR_ACCOUNT_SID"
+  auth_token: "YOUR_AUTH_TOKEN"
+  phone_number: "YOUR_TWILIO_PHONE_NUMBER"
+
+admin:
+  phone_number: "ADMIN_PHONE_NUMBER"  # Replace with your Admin's phone number (include country code)
+
+
