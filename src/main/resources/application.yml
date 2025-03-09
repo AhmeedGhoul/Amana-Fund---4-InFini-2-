@@ -14,5 +14,3 @@ twilio:
   auth_token: "YOUR_AUTH_TOKEN"
   phone_number: "YOUR_TWILIO_PHONE_NUMBER"
 
-admin:
-  phone_number: "+216XXXXXXXX"  # Replace with your Admin's phone number (include country code)
