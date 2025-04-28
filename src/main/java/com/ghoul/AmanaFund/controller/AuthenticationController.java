@@ -3,6 +3,7 @@ package com.ghoul.AmanaFund.controller;
 import com.ghoul.AmanaFund.Dao.AuthenticationRequest;
 import com.ghoul.AmanaFund.Dao.GrantRoleRequest;
 import com.ghoul.AmanaFund.Dao.RegistrationRequest;
+import com.ghoul.AmanaFund.Dao.ResetPassRequest;
 import com.ghoul.AmanaFund.entity.ActivityLog;
 import com.ghoul.AmanaFund.entity.Users;
 import com.ghoul.AmanaFund.repository.UserRepository;
@@ -81,12 +82,12 @@ public class AuthenticationController {
         return ResponseEntity.status(HttpStatus.OK).build();
     }
 
-    @DeleteMapping("/Delete")
-    public ResponseEntity<Void> deleteUser(@RequestBody Users user, @RequestHeader("Authorization") String token) throws IOException {
+    @DeleteMapping("/Delete/{userId}")
+    public ResponseEntity<Void> deleteUser(@PathVariable int userId, @RequestHeader("Authorization") String token) throws IOException {
         Users adminUser = extractUser(token);
         String ipAddress = ipGeolocationService.getIpFromIpify();
         String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
-        authService.deleteUser(user);
+        authService.deleteUser(userId);
         logActivity("User Delete", "User Delete succeeded", adminUser,ipAddress,country);
         return ResponseEntity.status(HttpStatus.OK).build();
     }
@@ -96,11 +97,7 @@ public class AuthenticationController {
             @RequestHeader("Authorization") String token,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) throws MessagingException, IOException {
-        Users adminUser = extractUser(token);
-        String ipAddress = ipGeolocationService.getIpFromIpify();
-        String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
         Page<Users> users = authService.getAllUsersPaginated(page, size);
-        logActivity("Users Preview", "User Preview succeeded", adminUser,ipAddress,country);
         return ResponseEntity.ok(users);
     }
     @PutMapping("/Modify")
@@ -177,26 +174,27 @@ public class AuthenticationController {
         String filePath = authService.generateUserReport(directoryPath, fileName);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
-    @PostMapping("/forgot-password")
-    public ResponseEntity<AuthenticationResponse> forgotPassword(@RequestParam String email) {
-        try {
-            authService.resetPassword(email);
-            return ResponseEntity.ok(new AuthenticationResponse("Password reset link sent to your email."));
-        } catch (UsernameNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new AuthenticationResponse("Email not found."));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new AuthenticationResponse("An error occurred. Please try again."));
+        @PostMapping("/forgot-password")
+        public ResponseEntity<AuthenticationResponse> forgotPassword(@RequestParam String email) {
+            try {
+                authService.resetPassword(email);
+                return ResponseEntity.ok(new AuthenticationResponse("Password reset link sent to your email."));
+            } catch (UsernameNotFoundException e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new AuthenticationResponse("Email not found."));
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new AuthenticationResponse("An error occurred. Please try again."));
+            }
         }
-    }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<AuthenticationResponse> resetPassword(@RequestParam String token, @RequestParam String newPassword) throws MessagingException {
+    public ResponseEntity<AuthenticationResponse> resetPassword(@RequestBody ResetPassRequest resetPasswordRequest) throws MessagingException {
         try {
-            AuthenticationResponse response = authService.ResetPassword(token, newPassword);
+            AuthenticationResponse response = authService.ResetPassword(resetPasswordRequest.getToken(), resetPasswordRequest.getNewPassword());
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthenticationResponse("Invalid or expired token."));
         }
     }
+
 }
 

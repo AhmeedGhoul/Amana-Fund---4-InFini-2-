@@ -27,80 +27,73 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//        http.
-//                cors(withDefaults()).
-//                csrf(AbstractHttpConfigurer::disable).authorizeHttpRequests(req -> req
-//                        .requestMatchers("/auth/register",
-//                                "/auth/authenticate",
-//                                "/contracts/**",
-//                                "/creditpool/**",
-//                                "/auth/forgot-password",
-//                                "/auth/reset-password",
-//                                "/auth/F2A",
-//                                "/auth/Promote",
-//                                "/v2/api-docs",
-//                                "/v3/api-docs",
-//                                "/v3/api-docs/**",
-//                                "/swagger-resources",
-//                                "/swagger-resources/**",
-//                                "/configuration/ui",
-//                                "/configuration/security",
-//                                "/swagger-ui/**",
-//                                "/webjars/**",
-//                                "/swagger-ui.html").permitAll()
-//                        .requestMatchers(
-//                                "/ActivityLog/**",
-//                                "/audit/**",
-//                                "/contracts/**",
-//                                "/creditpool/**",
-//                                "/AccountPayment/**",
-//                                "/Contract/**",
-//                                "/case/**",
-//                                "/Garantie/**",
-//                                "/Payment/**",
-//                                "/Police/**",
-//                                "/Sinistre/**"
-//                        ).hasRole("AUDITOR")
-//                        .requestMatchers(
-//                                "Account/**",
-//                                "Request/**",
-//                                "account-payments/**",
-//                                "Contract/**",
-//                                "Garantie/**",
-//                                "Object/**",
-//                                "Person/**",
-//                                "Police/**",
-//                                "Sinitre/**",
-//                                "/AccountPayment/**",
-//                                "/Account/**",
-//                                "/Agency/**",
-//                                "/Contract/**",
-//                                "/CreditPool/**",
-//                                "/Garantie/**",
-//                                "/Request/**"
-//                        ).hasRole("AGENT")
-//                        .requestMatchers("/**").hasRole("ADMIN")
-//                        .anyRequest().authenticated()
-//        )
-//        .authenticationProvider(authenticationProvider)
-//                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-        http.
-                cors(withDefaults()).
-                csrf(AbstractHttpConfigurer::disable)
+        http.cors(withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req -> req
-                        .requestMatchers("/**", "/v2/api-docs",
-                                "/v3/api-docs",
+                        // Public endpoints (authentication-related only)
+                        .requestMatchers(
+                                "/auth/register",
+                                "/auth/authenticate",
+                                "/auth/forgot-password",
+                                "/auth/reset-password",
+                                "/auth/F2A",
+                                "/v2/api-docs",
                                 "/v3/api-docs/**",
-                                "/swagger-resources",
                                 "/swagger-resources/**",
                                 "/configuration/ui",
                                 "/configuration/security",
                                 "/swagger-ui/**",
                                 "/webjars/**",
-                                "/swagger-ui.html").permitAll()
+                                "/swagger-ui.html"
+                        ).permitAll()
+
+                        // ADMIN-only secured endpoints
+                        .requestMatchers(
+                                "/auth/Promote",
+                                "/auth/Demote",
+                                "/auth/Modify",
+                                "/auth/Delete/**",
+                                "/auth/users",
+                                "/auth/generateUserReport",
+                                "/ActivityLog/**",
+                                "/audit/**",
+                                "/contracts/**",
+                                "/case/**",
+                                "/Garantie/**",
+                                "/Payment/**",
+                                "/Police/**",
+                                "/Sinistre/**",
+                                "/AccountPayment/**",
+                                "/Account/**",
+                                "/Agency/**",
+                                "/CreditPool/**",
+                                "/Request/**"
+                        ).hasRole("ADMIN")
+
+                        // AGENT-only secured endpoints
+                        .requestMatchers(
+                                "/Request/**",
+                                "/account-payments/**",
+                                "/Contract/**",
+                                "/Object/**",
+                                "/Person/**",
+                                "/Sinitre/**"
+                        ).hasRole("AGENT")
+
+                        // AUDITOR-only secured endpoints
+                        .requestMatchers(
+                                "/audit/**",
+                                "/ActivityLog/**"
+                        ).hasRole("AUDITOR")
+
+                        // Any other requests must be authenticated
+                        .anyRequest().authenticated()
                 )
+                .sessionManagement(session -> session.sessionCreationPolicy(STATELESS))
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
+
 }

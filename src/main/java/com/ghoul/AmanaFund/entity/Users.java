@@ -70,6 +70,7 @@ public class Users implements UserDetails, Principal {
     private Boolean enabled;
     private Boolean accountDeleted=false;
     private Boolean accountLocked;
+    private float userScore;
 
     @CreatedDate
     @Column(updatable = false, nullable = false)
