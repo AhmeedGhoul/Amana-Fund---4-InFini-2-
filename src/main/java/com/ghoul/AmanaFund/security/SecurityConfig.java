@@ -34,6 +34,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/auth/register",
                                 "/auth/authenticate",
+                                "/auth/Promote",
                                 "/auth/forgot-password",
                                 "/auth/reset-password",
                                 "/auth/F2A",

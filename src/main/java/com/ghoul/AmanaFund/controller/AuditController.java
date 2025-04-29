@@ -3,6 +3,7 @@ package com.ghoul.AmanaFund.controller;
 import com.ghoul.AmanaFund.entity.ActivityLog;
 import com.ghoul.AmanaFund.entity.Audit;
 import com.ghoul.AmanaFund.entity.Users;
+import com.ghoul.AmanaFund.repository.ActivityLogRepository;
 import com.ghoul.AmanaFund.security.JwtService;
 import com.ghoul.AmanaFund.service.ActivityService;
 import com.ghoul.AmanaFund.service.AuditService;
@@ -34,16 +35,41 @@ public class AuditController {
     private final AuthenticationService authService;
     private final ActivityService activityService;
     private final IpGeolocationService ipGeolocationService;
+    private final ActivityLogRepository activityLogRepository;
 
     @PostMapping("/CreateAudit")
-    public ResponseEntity<Audit> createAudit(@Valid @RequestBody Audit audit, @RequestHeader("Authorization") String token) throws IOException {
+    public ResponseEntity<?> createAudit(@Valid @RequestBody Audit audit, @RequestHeader("Authorization") String token) throws IOException {
         Users createdByUser = extractUser(token);
         String ipAddress = ipGeolocationService.getIpFromIpify();
         String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
-        auditService.save(audit);
-        logActivity("Audit creation", "Audit creation succeeded", createdByUser,ipAddress,country);
-        return ResponseEntity.status(HttpStatus.CREATED).body(audit);
+
+        if (audit.getActivityLogs() == null || audit.getActivityLogs().isEmpty()) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Cannot create an Audit without at least one Activity Log linked.");
+        }
+
+        Audit savedAudit = auditService.save(Audit.builder()
+                .dateAudit(audit.getDateAudit())
+                .statusAudit(audit.getStatusAudit())
+                .output(audit.getOutput())
+                .reviewedDate(audit.getReviewedDate())
+                .auditType(audit.getAuditType())
+                .build()
+        );
+        for (ActivityLog activityLog : audit.getActivityLogs()) {
+            ActivityLog loadedActivity = activityLogRepository.findById(activityLog.getActivityId())
+                    .orElseThrow(() -> new IllegalArgumentException("Activity not found: ID " + activityLog.getActivityId()));
+
+            loadedActivity.setAudit(savedAudit);
+            activityLogRepository.save(loadedActivity);
+        }
+
+        logActivity("Audit creation", "Audit creation succeeded", createdByUser, ipAddress, country);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedAudit);
     }
+
 
     @PutMapping("/ModifyAudit")
     public ResponseEntity<Audit> modifyAudit(@Valid @RequestBody Audit audit, @RequestHeader("Authorization") String token) throws IOException {
@@ -91,18 +117,20 @@ public class AuditController {
     }
     @GetMapping("/search")
     public ResponseEntity<Page<Audit>> searchAudits(
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateAudit,
+            @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String statusAudit,
             @RequestParam(required = false) String output,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime reviewedDate,
+            @RequestParam(required = false) String endDate,
             @RequestParam(required = false) String auditType,
             @RequestParam(required = false) List<String> sortBy,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        Page<Audit> audits = auditService.searchAudits(dateAudit, statusAudit, output, reviewedDate, auditType, sortBy, page, size);
+        Page<Audit> audits = auditService.searchAudits(startDate, statusAudit, output, endDate, auditType, sortBy, page, size);
         return ResponseEntity.ok(audits);
     }
+
+
     @GetMapping("/generateAuditReport")
     public ResponseEntity<Void> generateAuditReport(
             @RequestHeader("Authorization") String token,

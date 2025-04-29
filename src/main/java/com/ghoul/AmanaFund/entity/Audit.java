@@ -37,7 +37,6 @@ public class Audit {
     @NotNull(message = "Audit type is required")
     private AuditType auditType;
     @OneToMany(mappedBy = "audit", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
     private List<ActivityLog> activityLogs;
     @OneToMany(mappedBy = "audit", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore

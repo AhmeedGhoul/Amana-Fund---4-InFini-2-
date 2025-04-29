@@ -1,5 +1,6 @@
 package com.ghoul.AmanaFund.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -34,6 +35,7 @@ public class ActivityLog {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "audit_id", nullable = true)
+    @JsonBackReference
     private Audit audit;
 
     @Column(nullable = true)
