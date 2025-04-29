@@ -42,8 +42,8 @@ public class FraudCaseService {
     fraudCaseRepository.save(fraudCases);
 
     }
-    public void delete(FraudCases fraudCases) {
-        fraudCaseRepository.delete(fraudCases);
+    public void delete(int fraudCasesid) {
+        fraudCaseRepository.delete(getFraudById(fraudCasesid));
     }
     public FraudCases getFraudById(int id) {
         return fraudCaseRepository.findById(id)

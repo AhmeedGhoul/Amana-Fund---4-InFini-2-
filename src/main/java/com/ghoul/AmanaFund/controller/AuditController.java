@@ -81,12 +81,12 @@ public class AuditController {
         return ResponseEntity.status(HttpStatus.OK).body(audit);
     }
 
-    @DeleteMapping("/DeleteAudit")
-    public ResponseEntity<Void> deleteAudit(@RequestBody Audit audit, @RequestHeader("Authorization") String token) throws IOException {
+    @DeleteMapping("/DeleteAudit/{auditid}")
+    public ResponseEntity<Void> deleteAudit(@PathVariable int auditid, @RequestHeader("Authorization") String token) throws IOException {
         Users deletedByUser = extractUser(token);
         String ipAddress = ipGeolocationService.getIpFromIpify();
         String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
-        auditService.delete(audit);
+        auditService.delete(auditid);
         logActivity("Audit deletion", "Audit deletion succeeded", deletedByUser,ipAddress,country);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }

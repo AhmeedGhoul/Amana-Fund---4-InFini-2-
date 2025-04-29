@@ -1,6 +1,8 @@
 package com.ghoul.AmanaFund.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
@@ -16,6 +18,7 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 
 public class Audit {
     @Id
@@ -36,9 +39,10 @@ public class Audit {
 
     @NotNull(message = "Audit type is required")
     private AuditType auditType;
-    @OneToMany(mappedBy = "audit", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "audit")
+    @JsonManagedReference
     private List<ActivityLog> activityLogs;
-    @OneToMany(mappedBy = "audit", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "audit")
     @JsonIgnore
     private List<FraudCases> fraudCases;
     @Override

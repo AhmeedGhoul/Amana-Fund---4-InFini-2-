@@ -36,8 +36,8 @@ public class AuditService {
         return audit;
     }
 
-    public void delete(Audit audit) {
-        auditServiceRepository.delete(audit);
+    public void delete(int auditid) {
+        auditServiceRepository.delete(getAuditById(auditid));
 
     }
     public Audit getAuditById(int id) {

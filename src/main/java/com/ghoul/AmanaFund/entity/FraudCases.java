@@ -1,5 +1,6 @@
 package com.ghoul.AmanaFund.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
@@ -28,9 +29,11 @@ public class FraudCases {
     private CaseStatus caseStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "Audit_id", nullable = true)
+    @JoinColumn(name = "Audit_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "activityLogs", "fraudCases"})
+
     private Audit audit;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = true)
+    @JoinColumn(name = "user_id")
     private Users responsibleUser;
 }
