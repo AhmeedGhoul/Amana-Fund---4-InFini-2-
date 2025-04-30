@@ -1,5 +1,6 @@
 package com.ghoul.AmanaFund.service;
 
+import com.ghoul.AmanaFund.entity.Agency;
 import com.ghoul.AmanaFund.entity.Governorate;
 import com.ghoul.AmanaFund.repository.IagencyRepository;
 import lombok.AllArgsConstructor;
@@ -7,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import com.ghoul.AmanaFund.entity.Agency;
+
 import java.util.List;
 
 @Service
@@ -16,9 +17,26 @@ public class AgencyService implements IagencyService {
     @Autowired
     private IagencyRepository iagencyRepository;
 
+    @Autowired
+    private GeoLocationService geoLocationService;
+
+    @Autowired
+    private TwilioService twilioService; // Inject Twilio Service
+
     @Override
     public Agency addAgency(Agency agency) {
-        return iagencyRepository.save(agency);
+        double[] coordinates = geoLocationService.getCoordinates(
+                agency.getAddress(), agency.getCity(), agency.getGovernorate().name());
+        agency.setLatitude(coordinates[0]);
+        agency.setLongitude(coordinates[1]);
+        Agency savedAgency = iagencyRepository.save(agency);
+
+        // Send SMS Notification
+        String message = "New agency added: " + savedAgency.getCity() +
+                ", Address: " + savedAgency.getAddress();
+        twilioService.sendSms(message);
+
+        return savedAgency;
     }
 
     @Override
@@ -28,7 +46,18 @@ public class AgencyService implements IagencyService {
 
     @Override
     public Agency updateAgency(Agency agency) {
-        return iagencyRepository.save(agency);
+        double[] coordinates = geoLocationService.getCoordinates(
+                agency.getAddress(), agency.getCity(), agency.getGovernorate().name());
+        agency.setLatitude(coordinates[0]);
+        agency.setLongitude(coordinates[1]);
+        Agency updatedAgency = iagencyRepository.save(agency);
+
+        // Send SMS Notification
+        String message = "Agency updated: " + updatedAgency.getCity() +
+                ", New Address: " + updatedAgency.getAddress();
+        twilioService.sendSms(message);
+
+        return updatedAgency;
     }
 
     @Override
@@ -39,6 +68,10 @@ public class AgencyService implements IagencyService {
     @Override
     public void removeAgency(Integer id_agency) {
         iagencyRepository.deleteById(id_agency);
+
+        // Send SMS Notification
+        String message = "Agency with ID " + id_agency + " has been deleted.";
+        twilioService.sendSms(message);
     }
 
     @Override

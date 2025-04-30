@@ -40,12 +40,15 @@ public class SecurityConfig {
                                 "/auth/F2A",
                                 "/v2/api-docs",
                                 "/v3/api-docs/**",
+                                "/Agency/**",
                                 "/swagger-resources/**",
                                 "/configuration/ui",
                                 "/configuration/security",
                                 "/swagger-ui/**",
                                 "/webjars/**",
-                                "/swagger-ui.html"
+                                "/swagger-ui.html",
+                                "/Request/**"
+
                         ).permitAll()
 
                         // ADMIN-only secured endpoints
@@ -66,9 +69,7 @@ public class SecurityConfig {
                                 "/Sinistre/**",
                                 "/AccountPayment/**",
                                 "/Account/**",
-                                "/Agency/**",
-                                "/CreditPool/**",
-                                "/Request/**"
+                                "/CreditPool/**"
                         ).hasRole("ADMIN")
 
                         // AGENT-only secured endpoints
