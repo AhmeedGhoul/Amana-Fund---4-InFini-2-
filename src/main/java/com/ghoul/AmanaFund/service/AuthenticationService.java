@@ -70,6 +70,7 @@ public class    AuthenticationService {
                 .accountDeleted(false)
                 .age(request.getAge())
                 .address(request.getAddress())
+                .userScore(0)
                 .phoneNumber(request.getPhoneNumber())
                 .dateOfBirth(request.getDateOfBirth())
                 .civilStatus(request.getCivilStatus())
@@ -91,26 +92,7 @@ public class    AuthenticationService {
         sendValidationEmail(user);
         //sendValidationSms(user);
     }
-    public void resetPassword(String email) throws MessagingException {
-        Users user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("Email not found"));
-        sendResetEmail(user);
-        //sendValidationSms(user);
 
-    }
-
-    private void sendResetEmail(Users user) throws MessagingException {
-        var newToken = generateAndSaveActivationToken(user);
-        String activationUrl = "https://your-app.com/reset-password?token=" + newToken;
-
-        emailService.sendEmail(
-                user.getEmail(),
-                EmailTemplateName.RESET_PASSWORD,
-                activationUrl,
-                newToken,
-                "Password Reset"
-        );
-    }
 
     public AuthenticationResponse ResetPassword(String token, String password) {
         Token savedToken = tokenRepository.findByToken(token)
@@ -137,26 +119,26 @@ public class    AuthenticationService {
                 .token(jwtToken)
                 .build();
     }
-    public AuthenticationResponse activateAccount(String token) throws MessagingException {
-        Token savedToken = tokenRepository.findByToken(token)
-                .orElseThrow(() -> new RuntimeException("Invalid token"));
-        if (LocalDateTime.now().isAfter(savedToken.getExpiresAt())) {
-            sendValidationSms(savedToken.getUser());
-            throw new RuntimeException("Activation token has expired. A new token has been sent to the same phone number.");
+        public AuthenticationResponse activateAccount(String token) throws MessagingException {
+            Token savedToken = tokenRepository.findByToken(token)
+                    .orElseThrow(() -> new RuntimeException("Invalid token"));
+            if (LocalDateTime.now().isAfter(savedToken.getExpiresAt())) {
+                sendValidationSms(savedToken.getUser());
+                throw new RuntimeException("Activation token has expired. A new token has been sent to the same phone number.");
+            }
+            var user = userRepository.findById(savedToken.getUser().getId())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            user.setEnabled(true);
+            userRepository.save(user);
+            var claims = new HashMap<String, Object>();
+            claims.put("fullName", user.getName());
+            var jwtToken = jwtService.generateToken(claims, user);
+            savedToken.setValidatedAt(LocalDateTime.now());
+            tokenRepository.save(savedToken);
+            return AuthenticationResponse.builder()
+                    .token(jwtToken)
+                    .build();
         }
-        var user = userRepository.findById(savedToken.getUser().getId())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        user.setEnabled(true);
-        userRepository.save(user);
-        var claims = new HashMap<String, Object>();
-        claims.put("fullName", user.getName());
-        var jwtToken = jwtService.generateToken(claims, user);
-        savedToken.setValidatedAt(LocalDateTime.now());
-        tokenRepository.save(savedToken);
-        return AuthenticationResponse.builder()
-                .token(jwtToken)
-                .build();
-    }
 
     public void grantRole(String email, String role) {
         var userRole = roleRepository.findByName(role)
@@ -204,8 +186,8 @@ public class    AuthenticationService {
 
 
 
-    public void deleteUser(@Valid Users User) {
-        var userr = userRepository.findByEmail(User.getEmail()).orElseThrow(() -> new IllegalStateException("USER NOT FOUND"));
+    public void deleteUser(@Valid int User) {
+        var userr = userRepository.findById(User).orElseThrow(() -> new IllegalStateException("USER NOT FOUND"));
         if (userr != null) {
 
             var updatedUser = Users.builder()
@@ -214,10 +196,11 @@ public class    AuthenticationService {
                     .firstName(userr.getFirstName())
                     .lastName(userr.getLastName())
                     .email(userr.getEmail())
-                    .password(passwordEncoder.encode(User.getPassword()))
+                    .password(passwordEncoder.encode(userr.getPassword()))
                     .accountLocked(userr.getAccountLocked())
                     .accountDeleted(true)
                     .age(userr.getAge())
+                    .userScore(userr.getUserScore())
                     .phoneNumber(userr.getPhoneNumber())
                     .address(userr.getAddress())
                     .dateOfBirth(userr.getDateOfBirth())
@@ -248,6 +231,7 @@ public class    AuthenticationService {
                     .accountLocked(userr.getAccountLocked())
                     .accountDeleted(userr.getAccountDeleted())
                     .age(User.getAge())
+                    .userScore(User.getUserScore())
                     .address(User.getAddress())
                     .phoneNumber(User.getPhoneNumber())
                     .dateOfBirth(User.getDateOfBirth())
@@ -367,5 +351,26 @@ public class    AuthenticationService {
         long totalUsers = userRepository.count();
         long lockedUsers = userRepository.countByEnabled(true);
         return (lockedUsers * 100) / totalUsers;
+    }
+
+    public void resetPassword(String email) throws MessagingException {
+        Users user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("Email not found"));
+        sendResetEmail(user);
+        //sendValidationSms(user);
+
+    }
+
+    private void sendResetEmail(Users user) throws MessagingException {
+        var newToken = generateAndSaveActivationToken(user);
+        String activationUrl = "http://localhost:4200/authentication/reset-password?token=" + newToken;
+
+        emailService.sendEmail(
+                user.getEmail(),
+                EmailTemplateName.RESET_PASSWORD,
+                activationUrl,
+                newToken,
+                "Password Reset"
+        );
     }
 }

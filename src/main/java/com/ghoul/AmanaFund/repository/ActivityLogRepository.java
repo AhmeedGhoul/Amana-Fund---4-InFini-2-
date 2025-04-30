@@ -14,6 +14,6 @@ import java.util.Optional;
 public interface ActivityLogRepository extends JpaRepository<ActivityLog, Integer> , JpaSpecificationExecutor<ActivityLog> {
     Optional<ActivityLog> findById(Integer id);
     List<ActivityLog> findByUser(Users user);
-    @Query("SELECT l FROM ActivityLog l WHERE l.activityDate >= :timeLimit ORDER BY l.activityDate DESC")
+    @Query("SELECT l FROM ActivityLog l JOIN FETCH l.user WHERE l.activityDate >= :timeLimit ORDER BY l.activityDate DESC")
     List<ActivityLog> getRecentLogs(LocalDateTime timeLimit);
 }

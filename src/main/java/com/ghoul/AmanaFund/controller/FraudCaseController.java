@@ -50,10 +50,10 @@ public class FraudCaseController {
         return ResponseEntity.status(HttpStatus.OK).body(fraudCases);
     }
 
-    @DeleteMapping("/DeleteCase")
-    public ResponseEntity<Void> deleteCase(@RequestBody FraudCases fraudCases, @RequestHeader("Authorization") String token) throws IOException {
+    @DeleteMapping("/DeleteCase/{fraudCasesid}")
+    public ResponseEntity<Void> deleteCase(@PathVariable int  fraudCasesid, @RequestHeader("Authorization") String token) throws IOException {
         Users deletedByUser = extractUser(token);
-        fraudCaseService.delete(fraudCases);
+        fraudCaseService.delete(fraudCasesid);
         String ipAddress = ipGeolocationService.getIpFromIpify();
         String country = ipGeolocationService.getCountryFromGeolocationApi(ipAddress);
         logActivity("Case deletion", "Case deletion succeeded", deletedByUser,ipAddress,country);

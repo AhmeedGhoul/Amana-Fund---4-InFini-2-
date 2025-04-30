@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,13 +30,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuditService {
     private final AuditServiceRepository auditServiceRepository;
-    public void save(Audit audit) {
+    public Audit save(Audit audit) {
        auditServiceRepository.save(audit);
 
+        return audit;
     }
 
-    public void delete(Audit audit) {
-        auditServiceRepository.delete(audit);
+    public void delete(int auditid) {
+        auditServiceRepository.delete(getAuditById(auditid));
 
     }
     public Audit getAuditById(int id) {
@@ -62,8 +62,8 @@ public class AuditService {
     public Page<Audit> getAllAudit(Pageable pageable) {
         return auditServiceRepository.findAll(pageable);
     }
-    public Page<Audit> searchAudits(LocalDateTime dateAudit, String statusAudit, String output, LocalDateTime reviewedDate, String auditType, List<String> sortBy, int page, int size) {
-        Specification<Audit> spec = AuditSpecification.searchAudit(dateAudit, statusAudit, output, reviewedDate, auditType);
+    public Page<Audit> searchAudits(String dateAuditStr, String statusAudit, String output, String reviewedDateStr, String auditType, List<String> sortBy, int page, int size) {
+        Specification<Audit> spec = AuditSpecification.searchAudit(dateAuditStr, statusAudit, output, reviewedDateStr, auditType);
 
         // Handle sorting
         Sort sort = Sort.by(Sort.Direction.DESC, "dateAudit");
@@ -83,6 +83,7 @@ public class AuditService {
 
         return auditServiceRepository.findAll(spec, pageable);
     }
+
     public String generateAuditReport(Users user, String directoryPath, String fileName) throws IOException {
         List<Audit> audits = auditServiceRepository.findAll();
 

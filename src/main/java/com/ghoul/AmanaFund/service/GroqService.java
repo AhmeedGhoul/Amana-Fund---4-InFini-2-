@@ -18,7 +18,7 @@ public class GroqService {
 
     public String analyzeLogs(List<ActivityLog> logs) throws IOException {
         // Construct a structured log summary for better analysis
-        StringBuilder logDetails = new StringBuilder("Analyze these system logs and detect any suspicious activity.\n");
+        StringBuilder logDetails = new StringBuilder("Analyze these system logs and detect any suspicious activity. write suspicious or anomaly normal activity and dont give recommandadtion just the analysis i want result\n");
         for (ActivityLog log : logs) {
             logDetails.append("Timestamp: ").append(log.getActivityDate())
                     .append(", User: ").append(log.getUser())

@@ -7,32 +7,50 @@ import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
+
 public class AuditSpecification {
 
-public static Specification<Audit> searchAudit(LocalDateTime dateAudit, String statusAudit, String output, LocalDateTime reviewedDate, String auditType) {
-    return (root, query, criteriaBuilder) -> {
-        Predicate predicate = criteriaBuilder.conjunction();
+    public static Specification<Audit> searchAudit(String startDateStr, String statusAudit, String output, String endDateStr, String auditType) {
+        return (root, query, cb) -> {
+            Predicate predicate = cb.conjunction();
 
-        if (dateAudit != null) {
-            predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("dateAudit"), dateAudit));
-        }
-        if (statusAudit != null) {
-            StatusAudit statusEnum = StatusAudit.valueOf(statusAudit.toUpperCase());
-            predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("statusAudit"), statusEnum));
-        }
-        if (output != null && !output.isEmpty()) {
-            predicate = criteriaBuilder.and(predicate, criteriaBuilder.like(root.get("output"), "%" + output + "%"));
-        }
-        if (reviewedDate != null) {
-            predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("reviewedDate"), reviewedDate));
-        }
+            // Filter by dateAudit BETWEEN startDate AND endDate
+            if (startDateStr != null && !startDateStr.isEmpty()) {
+                try {
+                    LocalDateTime startDate = LocalDateTime.parse(startDateStr);
+                    predicate = cb.and(predicate, cb.greaterThanOrEqualTo(root.get("dateAudit"), startDate));
+                } catch (DateTimeParseException ignored) {}
+            }
 
-        if (auditType != null) {
-            AuditType auditEnum = AuditType.valueOf(auditType.toUpperCase());
-            predicate = criteriaBuilder.and(predicate, criteriaBuilder.equal(root.get("auditType"), auditEnum));
-        }
+            if (endDateStr != null && !endDateStr.isEmpty()) {
+                try {
+                    LocalDateTime endDate = LocalDateTime.parse(endDateStr);
+                    predicate = cb.and(predicate, cb.lessThanOrEqualTo(root.get("dateAudit"), endDate));
+                } catch (DateTimeParseException ignored) {}
+            }
 
-        return predicate;
-    };
-}
+            if (statusAudit != null && !statusAudit.isEmpty()) {
+                try {
+                    StatusAudit statusEnum = StatusAudit.valueOf(statusAudit.toUpperCase());
+                    predicate = cb.and(predicate, cb.equal(root.get("statusAudit"), statusEnum));
+                } catch (IllegalArgumentException ignored) {}
+            }
+
+            if (output != null && !output.isEmpty()) {
+                predicate = cb.and(predicate, cb.like(root.get("output"), "%" + output + "%"));
+            }
+
+            if (auditType != null && !auditType.isEmpty()) {
+                try {
+                    AuditType auditEnum = AuditType.valueOf(auditType.toUpperCase());
+                    predicate = cb.and(predicate, cb.equal(root.get("auditType"), auditEnum));
+                } catch (IllegalArgumentException ignored) {}
+            }
+
+            return predicate;
+        };
+    }
+
+
 }

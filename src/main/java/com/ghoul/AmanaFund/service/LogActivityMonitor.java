@@ -1,7 +1,9 @@
 package com.ghoul.AmanaFund.service;
 
 import com.ghoul.AmanaFund.entity.ActivityLog;
+import com.ghoul.AmanaFund.entity.Users;
 import com.ghoul.AmanaFund.repository.ActivityLogRepository;
+import com.ghoul.AmanaFund.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -21,24 +23,55 @@ import java.util.List;
 public class LogActivityMonitor {
     private final GroqService groqService;
     private final ActivityLogRepository activityLogRepository;
+    private final UserRepository userRepository;
 
 
-    @Scheduled(cron = "0 00 21 * * *") // Runs at 20:00 (8 PM) every day
+    @Scheduled(cron = "0 01 13 * * *") // Runs at 21:00 (9 PM) every day
     public void detectSuspiciousActivity() {
-        LocalDateTime timeLimit = LocalDateTime.now().minusDays(15); // Last 24 hours logs
+        LocalDateTime timeLimit = LocalDateTime.now().minusDays(15);
 
         List<ActivityLog> recentLogs = activityLogRepository.getRecentLogs(timeLimit);
+
+        if (recentLogs.isEmpty()) {
+            System.out.println("No recent activity logs found.");
+            return;
+        }
 
         try {
             String analysis = groqService.analyzeLogs(recentLogs);
             System.out.println("Groq Analysis: " + analysis);
 
-            // Write analysis to a file
             saveToFile(analysis);
+            for (ActivityLog log : recentLogs) {
+                Users user = log.getUser();
+
+                if (user != null) {
+                    int scoreChange = evaluateSuspicion(analysis, log);
+                    user.setUserScore(user.getUserScore() + scoreChange);
+
+                    userRepository.save(user);
+                }
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+    private int evaluateSuspicion(String analysis, ActivityLog log) {
+        String userActivity = log.getActivityName().toLowerCase();
+
+        if (analysis.contains("suspicious") && analysis.contains(log.getUser().getUsername())) {
+            return -10;
+        } else if (analysis.contains("anomaly") || userActivity.contains("failed login")) {
+            return -5;
+        } else if (analysis.contains("normal activity") || userActivity.contains("successful login")) {
+            return +2;
+        }
+
+        return 0;
+    }
+
 
     private void saveToFile(String content) throws IOException {
         // Get the desktop directory
