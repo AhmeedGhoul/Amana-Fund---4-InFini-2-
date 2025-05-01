@@ -8,15 +8,13 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: ahmeeeedghoul@gmail.com  # Your Gmail address
-    password: zxox gwnw olhi xyyk
+    password: wfac ijuw dubr gttd
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
-
-
 
   jpa:
     hibernate:
@@ -50,4 +48,14 @@ infobip:
     key: "73d085fc07746e1908851f3f997c844d-ac649f8a-0dfb-448f-b5c7-d2d355b7b376"
   sender: "447491163443"
 
+twilio:
+  account_sid: "YOUR_ACCOUNT_SID"
+  auth_token: "YOUR_AUTH_TOKEN"
+  phone_number: "YOUR_TWILIO_PHONE_NUMBER"
 
+admin:
+  phone_number: "ADMIN_PHONE_NUMBER"  # Replace with your Admin's phone number (include country code)
+
+sendinblue:
+  api:
+    key: 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

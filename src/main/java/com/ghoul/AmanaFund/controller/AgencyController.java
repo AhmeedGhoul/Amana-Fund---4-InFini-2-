@@ -9,7 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 import com.ghoul.AmanaFund.entity.Agency;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @AllArgsConstructor
@@ -44,7 +47,6 @@ public class AgencyController {
         agencyService.removeAgency(id_agency);
     }
 
-    // Updated: Advanced search for city filtering
     @GetMapping("filter/city")
     public List<Agency> filterByCity(@RequestParam String city) {
         return agencyService.searchByCity(city);
@@ -59,4 +61,25 @@ public class AgencyController {
     public Page<Agency> getAgenciesWithPagination(@RequestParam int page, @RequestParam int size) {
         return agencyService.getAgenciesWithPagination(page, size);
     }
+
+    @GetMapping("/location/{id}")
+    public Map<String, Object> getAgencyLocation(@PathVariable Integer id) {
+        Agency agency = agencyService.retrieveAgency(id);
+        if (agency == null) {
+            throw new RuntimeException("Agency not found");
+        }
+
+        String googleMapsLink = String.format(
+                "https://www.google.com/maps?q=%f,%f", agency.getLatitude(), agency.getLongitude());
+
+        return Map.of(
+                "google_maps_link", googleMapsLink,
+                "address", agency.getAddress(),
+                "city", agency.getCity(),
+                "governorate", agency.getGovernorate(),
+                "latitude", agency.getLatitude(),
+                "longitude", agency.getLongitude()
+        );
+    }
+
 }
