@@ -22,6 +22,8 @@ import com.ghoul.AmanaFund.service.*;
 import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -127,6 +129,19 @@ public class PoliceController {
     @GetMapping("/{id}/total-amount-paid")
     public Double getTotalAmountPaid(@PathVariable Long id) {
         return policeService.calculateTotalAmountPaid(id);
+    }
+    @GetMapping("/{policeId}/next-payment")
+    public Date getNextPaymentDate(
+            @PathVariable Long policeId,
+            @RequestParam("lastPaymentDate") String lastPaymentDate) {
+        try {
+            // Define the date format inside the method
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            Date parsedDate = dateFormat.parse(lastPaymentDate);
+            return policeService.getNextPaymentDate(policeId, parsedDate);
+        } catch (ParseException e) {
+            throw new IllegalArgumentException("Invalid date format. Expected format: yyyy-MM-dd");
+        }
     }
 
 }

@@ -145,6 +145,57 @@ public class PoliceService implements IpoliceService{
             return sqlDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         }
     }
+    public Date getNextPaymentDate(Long policeId, Date lastPaymentDate) {
+        Optional<Police> policeOpt = ipoliceRepository.findById(policeId);
+
+        if (policeOpt.isEmpty()) {
+            throw new IllegalArgumentException("Police not found with ID: " + policeId);
+        }
+
+        Police police = policeOpt.get();
+
+        if (lastPaymentDate == null) {
+            throw new IllegalArgumentException("Last payment date is required");
+        }
+
+        FrequencyPolice frequency = police.getFrequency();
+        if (frequency == null) {
+            throw new IllegalArgumentException("Frequency is not set for this policy");
+        }
+
+        Date policyEndDate = police.getEnd();
+        if (policyEndDate == null) {
+            throw new IllegalArgumentException("Policy end date is not set");
+        }
+
+        // Define period based on the frequency using a switch block
+        int period;
+        switch (frequency) {
+            case MONTHLY:
+                period = 30;
+                break;
+            case QUARTERLY:
+                period = 90;
+                break;
+            case HALF_YEARLY:
+                period = 180;
+                break;
+            case YEARLY:
+                period = 365;
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid frequency type");
+        }
+
+        // Calculate the next payment date
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(lastPaymentDate);
+        calendar.add(Calendar.DAY_OF_YEAR, period);
+        Date nextPaymentDate = calendar.getTime();
+
+        // Ensure the next payment date does not exceed the policy end date
+        return nextPaymentDate.after(policyEndDate) ? null : nextPaymentDate;
+    }
 
 
 
