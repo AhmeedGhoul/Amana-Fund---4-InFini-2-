@@ -54,7 +54,7 @@ twilio:
   phone_number: "+1 361 320 6697"
 
 admin:
-  phone_number: "+216 53 468 103"  # Replace with your Admin's phone number (include country code)
+  phone_number: "ADMIN_PHONE_NUMBER"  # Replace with your Admin's phone number (include country code)
 
 sendinblue:
   api:
