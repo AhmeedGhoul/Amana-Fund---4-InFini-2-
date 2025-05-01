@@ -1,5 +1,6 @@
 package com.ghoul.AmanaFund.service;
 
+import com.ghoul.AmanaFund.DTO.PersonDTO;
 import com.ghoul.AmanaFund.entity.Garantie;
 import com.ghoul.AmanaFund.entity.Person;
 import com.ghoul.AmanaFund.entity.Police;
@@ -10,9 +11,9 @@ import java.util.List;
 
 public interface IpersonService {
     Person addGPerson(Person person);
-    List<Person> retrievePersons();
+    List<PersonDTO> retrievePersons();
     Person updatePerson(Person person);
-    Person retrievePerson(Long idPerson);
+    PersonDTO retrievePerson(Long idPerson);
     void removePerson(Long idPerson);
-    public Page<Person> getAllPaginated(Pageable pageable);
+    public Page<PersonDTO> getAllPaginated(Pageable pageable);
 }

@@ -1,5 +1,6 @@
 package com.ghoul.AmanaFund.controller;
 
+import com.ghoul.AmanaFund.DTO.PersonDTO;
 import com.ghoul.AmanaFund.entity.Person;
 import com.ghoul.AmanaFund.entity.Police;
 import com.ghoul.AmanaFund.service.PersonService;
@@ -31,7 +32,7 @@ public class PersonController {
         return personService.addGPerson(person);
     }
     @GetMapping("/getall_person")
-    public List<Person> GetAllPerson()
+    public List<PersonDTO> GetAllPerson()
     {
         return personService.retrievePersons();
     }
@@ -47,7 +48,7 @@ public class PersonController {
         personService.removePerson(id);
     }
     @GetMapping("/paginated")
-    public Page<Person> getPaginatedPerson(
+    public Page<PersonDTO> getPaginatedPerson(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "age") String sortBy,

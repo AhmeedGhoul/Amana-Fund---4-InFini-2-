@@ -1,4 +1,5 @@
 package com.ghoul.AmanaFund.service;
+import com.ghoul.AmanaFund.DTO.PoliceDTO;
 import com.ghoul.AmanaFund.entity.FrequencyPolice;
 import com.ghoul.AmanaFund.repository.IpoliceRepository;
 import lombok.AllArgsConstructor;
@@ -19,6 +20,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
 
@@ -27,6 +29,8 @@ import org.springframework.data.domain.Pageable;
 @AllArgsConstructor
 
 public class PoliceService implements IpoliceService{
+
+    private final PoliceDTOMapper policeDTOMapper;
     @Autowired
     private IpoliceRepository ipoliceRepository;
     private final TwilioService twilioService;
@@ -43,14 +47,18 @@ public class PoliceService implements IpoliceService{
                     ") has been successfully created. End date: " + savedPolice.getEnd() + ".";
 
             // Send SMS
-            twilioService.sendSms(phoneNumber, message);
+            /*twilioService.sendSms(phoneNumber, message);*/
 
         return savedPolice;
     }
 
     @Override
-    public List<Police> retrievePolices() {
-        return ipoliceRepository.findAll();
+    public List<PoliceDTO> retrievePolices() {
+        return ipoliceRepository
+                .findAll()
+                .stream()
+                .map(policeDTOMapper)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -61,8 +69,8 @@ public class PoliceService implements IpoliceService{
     }
 
     @Override
-    public Police retrievePolice(Long idPolice) {
-        return ipoliceRepository.findById(idPolice).orElseThrow(() -> new RuntimeException("idPolice not found"));
+    public PoliceDTO retrievePolice(Long idPolice) {
+        return ipoliceRepository.findById(idPolice).map(policeDTOMapper).orElseThrow(() -> new RuntimeException("idPolice not found"));
     }
 
     @Override
@@ -73,8 +81,10 @@ public class PoliceService implements IpoliceService{
     }
 
     @Override
-    public Page<Police> getAllPaginated(Pageable  pageable) {
-        return ipoliceRepository.findAll(pageable);
+    public Page<PoliceDTO> getAllPaginated(Pageable  pageable) {
+        return ipoliceRepository
+                .findAll(pageable)
+                .map(policeDTOMapper);
     }
 
     @Override
@@ -118,8 +128,10 @@ public class PoliceService implements IpoliceService{
             default:
                 throw new IllegalArgumentException("Unsupported frequency: " + police.getFrequency());
         }
-
-        return totalPayments * police.getAmount();
+        double Payements = totalPayments * police.getAmount();
+        if(Payements==0)
+            Payements = police.getAmount();
+        return Payements;
     }
 
     public LocalDate convertToLocalDate(Date sqlDate) {

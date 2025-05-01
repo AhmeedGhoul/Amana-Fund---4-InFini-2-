@@ -1,6 +1,6 @@
 package com.ghoul.AmanaFund.DTO;
 
-import com.ghoul.AmanaFund.entity.Person;
+import com.ghoul.AmanaFund.entity.TypeObject;
 import lombok.*;
 
 @AllArgsConstructor
@@ -8,15 +8,12 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
-public class PersonDTO {
+public class ObjectGDTO {
     private Long idGarantie;
-    private String name;
-    private String lastName;
-    private String cin;
-    private String email;
-    private int age;
-    private Double revenue;
     private boolean active;
     private String documents;
+    private int ownershipCertifNumber;
+    private double estimatedValue;
+    private TypeObject type;
     private Long policeId;
 }

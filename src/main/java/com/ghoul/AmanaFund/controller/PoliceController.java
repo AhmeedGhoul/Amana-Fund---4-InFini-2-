@@ -1,4 +1,5 @@
 package com.ghoul.AmanaFund.controller;
+import com.ghoul.AmanaFund.DTO.PoliceDTO;
 import com.ghoul.AmanaFund.repository.IpoliceRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -44,12 +45,12 @@ public class PoliceController {
         return policeService.addPolice(police);
     }
     @GetMapping("/getall_police")
-    public List<Police> GetAllPolice()
+    public List<PoliceDTO> GetAllPolice()
     {
         return policeService.retrievePolices();
     }
     @GetMapping("/paginated")
-    public Page<Police> getPaginatedContracts(
+    public Page<PoliceDTO> getPaginatedContracts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
             @RequestParam(defaultValue = "start") String sortBy,

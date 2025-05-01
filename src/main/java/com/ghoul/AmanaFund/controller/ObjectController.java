@@ -1,5 +1,6 @@
 package com.ghoul.AmanaFund.controller;
 
+import com.ghoul.AmanaFund.DTO.ObjectGDTO;
 import com.ghoul.AmanaFund.entity.ObjectG;
 import com.ghoul.AmanaFund.entity.Person;
 import com.ghoul.AmanaFund.service.ObjectService;
@@ -28,7 +29,7 @@ public class ObjectController {
         return objectService.addGObjectG(objectG);
     }
     @GetMapping("/getall_object")
-    public List<ObjectG> GetAllObject()
+    public List<ObjectGDTO> GetAllObject()
     {
         return objectService.retrieveObjectGs();
     }
@@ -43,14 +44,14 @@ public class ObjectController {
         objectService.removeObjectG(id);
     }
     @GetMapping("/paginated")
-    public Page<ObjectG> getPaginatedPerson(
+    public Page<ObjectGDTO> getPaginatedPerson(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size,
-            @RequestParam(defaultValue = "age") String sortBy,
+            @RequestParam(defaultValue = "ownershipCertifNumber") String sortBy,
             @RequestParam(defaultValue = "asc") String direction
     ) {
         // Allow only "start" or "end" for sorting
-        List<String> allowedSortFields = Arrays.asList("name", "age" , "revenue");
+        List<String> allowedSortFields = Arrays.asList("estimatedValue", "ownershipCertifNumber" , "type");
         if (!allowedSortFields.contains(sortBy)) {
             throw new IllegalArgumentException("Invalid sort field. Choose between 'name' or 'age' or 'revenue'.");
         }

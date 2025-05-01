@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Email;
 import lombok.*;
 
 @Setter
@@ -34,4 +35,9 @@ public class Person extends Garantie{
     @NotNull(message = "Revenue is required")
     @Positive(message = "Revenue must be a positive number")
     private Double revenue;
+
+    @NotBlank(message = "Email is required")
+    @Email(message = "Email should be valid")
+    private String email;
+
 }
