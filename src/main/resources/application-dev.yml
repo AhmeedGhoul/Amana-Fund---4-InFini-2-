@@ -2,13 +2,13 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/pidev?useSSL=false&serverTimezone=UTC
     username: root
-    password:
+    password:  # Remove your actual password here
     driver-class-name: com.mysql.cj.jdbc.Driver
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ahmeeeedghoul@gmail.com  # Your Gmail address
-    password: wfac ijuw dubr gttd
+    username: ahmeeeedghoul@gmail.com  # Your Gmail address (ensure you don't hardcode your password here)
+    password:  # Remove your Gmail password here
     properties:
       mail:
         smtp:
@@ -29,7 +29,7 @@ spring:
 application:
   security:
     jwt:
-      secret-key: JhtwZb0eG1auJ8fIuS7RlmStvl1jE5P0He7Fmj9T2Nl8dpG7gY3Uw5wKNvhfVojE5+lg4E28Q14e/pVX9hrp+Jq1kg+dfy6ixtP6tMzYhwpw6KjDC5FS9J7TO9Twsf7I
+      secret-key: <REPLACE_WITH_JWT_SECRET_KEY>  # Replace with a secret stored securely (e.g., environment variable)
       expiration: 8640000
   mailing:
     frontend:
@@ -42,20 +42,21 @@ server:
 
 springdoc:
   default-produces-media-type: application/json
+
 infobip:
   api:
     url: "https://ypjy3d.api.infobip.com"
-    key: "73d085fc07746e1908851f3f997c844d-ac649f8a-0dfb-448f-b5c7-d2d355b7b376"
-  sender: "447491163443"
+    key: <REPLACE_WITH_INFIBO_API_KEY>  # Replace with your Infobip API key, stored securely
+  sender: <REPLACE_WITH_INFIBO_SENDER>  # Replace with your Infobip sender phone number
 
 twilio:
-  account_sid: "YOUR_ACCOUNT_SID"
-  auth_token: "YOUR_AUTH_TOKEN"
-  phone_number: "YOUR_TWILIO_PHONE_NUMBER"
+  account_sid: "<REPLACE_WITH_TWILIO_ACCOUNT_SID>"
+  auth_token: "<REPLACE_WITH_TWILIO_AUTH_TOKEN>"
+  phone_number: "<REPLACE_WITH_TWILIO_PHONE_NUMBER>"
 
 admin:
-  phone_number: "ADMIN_PHONE_NUMBER"  # Replace with your Admin's phone number (include country code)
+  phone_number: "<REPLACE_WITH_ADMIN_PHONE_NUMBER>"  # Replace with your Admin's phone number (include country code)
 
 sendinblue:
   api:
-    key: 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
+    key: <REPLACE_WITH_SENDINBLUE_API_KEY>  # Replace with your Sendinblue API key, stored securely
