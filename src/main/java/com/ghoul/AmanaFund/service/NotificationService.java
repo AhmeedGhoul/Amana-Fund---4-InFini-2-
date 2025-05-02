@@ -1,42 +1,37 @@
 package com.ghoul.AmanaFund.service;
 
-import com.ghoul.AmanaFund.entity.CaseStatus;
-import com.ghoul.AmanaFund.entity.FraudCases;
-import com.ghoul.AmanaFund.entity.Users;
+import com.ghoul.AmanaFund.entity.*;
 import com.ghoul.AmanaFund.repository.FraudCaseRepository;
+import com.ghoul.AmanaFund.repository.NotificationRepository;
 import com.ghoul.AmanaFund.repository.UserRepository;
 import jakarta.mail.MessagingException;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import com.ghoul.AmanaFund.entity.EmailTemplateName;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class NotificationService {
+    private final NotificationRepository notificationRepository;
 
-    private final FraudCaseRepository fraudCasesRepository;
-    private final UserRepository usersRepository;
-    private final EmailService emailService;
-
-    @Scheduled(cron = "0 45 0 * * *")
-    public void notifyUnsolvedCases() throws MessagingException {
-        List<Users> allUsers = usersRepository.findAll();
-
-        for (Users user : allUsers) {
-            List<FraudCases> unsolvedCases = fraudCasesRepository.findByResponsibleUserAndCaseStatus(user, CaseStatus.PENDING);
-            if (!unsolvedCases.isEmpty()) {
-                sendNotification(user, unsolvedCases);
-            }
-        }
+    public void notifyUser(Users user, String message) {
+        Notification notification = new Notification(null, message, false, user, LocalDateTime.now());
+        notificationRepository.save(notification);
     }
 
-    private void sendNotification(Users user, List<FraudCases> fraudCases) throws MessagingException {
-        String subject = "Unsolved Fraud Case Updates"; // Email subject
-        emailService.sendEmail(user.getEmail(), user.getName(), EmailTemplateName.NEWS_CASES, fraudCases, subject);
+    public List<Notification> getUnseenNotifications(Users user) {
+        return notificationRepository.findByUserAndSeenFalse(user);
     }
 
+    public void markAsSeen(Long notificationId) {
+        notificationRepository.findById(notificationId).ifPresent(n -> {
+            n.setSeen(true);
+            notificationRepository.save(n);
+        });
+    }
 }
+

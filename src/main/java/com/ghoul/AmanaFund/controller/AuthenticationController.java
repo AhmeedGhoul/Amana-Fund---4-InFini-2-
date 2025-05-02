@@ -11,6 +11,7 @@ import com.ghoul.AmanaFund.security.JwtService;
 import com.ghoul.AmanaFund.service.ActivityService;
 import com.ghoul.AmanaFund.service.AuthenticationService;
 import com.ghoul.AmanaFund.service.IpGeolocationService;
+import com.ghoul.AmanaFund.service.NotificationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -42,6 +43,7 @@ public class AuthenticationController {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private NotificationService notificationService;
 
     @PostMapping("/register")
     public ResponseEntity<Void> createUser(@Valid @RequestBody RegistrationRequest request) throws IOException, MessagingException {
@@ -133,7 +135,6 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> verify2FACode(@RequestParam String token) throws MessagingException {
         try {
             AuthenticationResponse response = authService.activateAccount(token);
-
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthenticationResponse("Invalid 2FA code or expired token"));

@@ -68,7 +68,8 @@ public class SecurityConfig {
                                 "/Account/**",
                                 "/Agency/**",
                                 "/CreditPool/**",
-                                "/Request/**"
+                                "/Request/**",
+                                "/notification/**"
                         ).hasRole("ADMIN")
 
                         // AGENT-only secured endpoints
