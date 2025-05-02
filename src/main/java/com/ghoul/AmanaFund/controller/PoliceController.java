@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -35,6 +36,7 @@ import java.util.Optional;
 @Slf4j
 @RequestMapping("/police")
 public class PoliceController {
+    private final PoliceDTOMapper policeDTOMapper;
     @Autowired
     private PoliceService policeService;
     @Autowired
@@ -93,6 +95,9 @@ public class PoliceController {
             if (results.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
+            List<PoliceDTO> dtoList = results.stream()
+                    .map(policeDTOMapper)
+                    .toList();
             return new ResponseEntity<>(results, HttpStatus.OK);
         } catch (Exception e) {
             // Log the exception
