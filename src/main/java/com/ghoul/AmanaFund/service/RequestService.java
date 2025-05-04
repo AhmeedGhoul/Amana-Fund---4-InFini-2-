@@ -6,6 +6,7 @@ import com.ghoul.AmanaFund.repository.IrequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -35,9 +36,13 @@ public class RequestService implements IrequestService {
 
     @Override
     public List<Request> retrieveRequests() {
-        return irequestRepository.findAll();
+        return List.of();
     }
 
+    public Page<Request> retrieveRequests(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);  // Create a Pageable instance
+        return irequestRepository.findAll(pageable);  // Pass it to the repository method
+    }
     @Override
     public Request updateRequest(Request request) {
         Request updatedRequest = irequestRepository.save(request);

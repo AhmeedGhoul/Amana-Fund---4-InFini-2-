@@ -35,9 +35,9 @@ public class RequestController {
         return requestService.addRequest(request);
     }
 
-    @GetMapping("getall_request")
-    public List<Request> getAllRequests() {
-        return requestService.retrieveRequests();
+    @GetMapping("/getall_request")
+    public Page<Request> getAllRequests(@RequestParam("page") int page, @RequestParam("size") int size) {
+        return requestService.retrieveRequests(page, size);  // Call the service with pagination parameters
     }
 
     @PutMapping("update_request")

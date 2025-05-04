@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -32,16 +33,20 @@ public class AgencyService implements IagencyService {
         Agency savedAgency = iagencyRepository.save(agency);
 
         // Send SMS Notification
-        String message = "New agency added: " + savedAgency.getCity() +
-                ", Address: " + savedAgency.getAddress();
-        twilioService.sendSms(message);
+//        String message = "New agency added: " + savedAgency.getCity() +
+//                ", Address: " + savedAgency.getAddress();
+//        twilioService.sendSms(message);
 
         return savedAgency;
     }
 
     @Override
     public List<Agency> retrieveAgencies() {
-        return iagencyRepository.findAll();
+        return List.of();
+    }
+
+    public Page<Agency> retrieveAgencies(Pageable pageable) {
+        return iagencyRepository.findAll(pageable);
     }
 
     @Override
@@ -53,9 +58,9 @@ public class AgencyService implements IagencyService {
         Agency updatedAgency = iagencyRepository.save(agency);
 
         // Send SMS Notification
-        String message = "Agency updated: " + updatedAgency.getCity() +
-                ", New Address: " + updatedAgency.getAddress();
-        twilioService.sendSms(message);
+//        String message = "Agency updated: " + updatedAgency.getCity() +
+//                ", New Address: " + updatedAgency.getAddress();
+//        twilioService.sendSms(message);
 
         return updatedAgency;
     }
@@ -70,8 +75,8 @@ public class AgencyService implements IagencyService {
         iagencyRepository.deleteById(id_agency);
 
         // Send SMS Notification
-        String message = "Agency with ID " + id_agency + " has been deleted.";
-        twilioService.sendSms(message);
+//        String message = "Agency with ID " + id_agency + " has been deleted.";
+//        twilioService.sendSms(message);
     }
 
     @Override
