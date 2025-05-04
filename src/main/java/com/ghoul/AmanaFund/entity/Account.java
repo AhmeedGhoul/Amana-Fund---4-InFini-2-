@@ -26,15 +26,20 @@ public class Account {
     @NotNull(message = "Le type de compte est requis")
     private AccountType accountType;
 
-    @Positive(message = "Le montant doit être positif")
+    @Min(value = 0, message = "Le montant doit être positif ou zéro")
     private Double amount;
 
     @Column(unique = true, nullable = false)
     private String rib;
 
+
+    @NotBlank(message = "Client email is required")
+    @Email(message = "Invalid client email format")
+    private String clientEmail; // Client's email
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = true)
-    private Users user;
+    @JoinColumn(name = "agent_id")
+    private Users agent; // Agent who created the account (renamed from 'user')
 
     @ElementCollection
     @CollectionTable(name = "zakat_transactions", joinColumns = @JoinColumn(name = "account_id"))

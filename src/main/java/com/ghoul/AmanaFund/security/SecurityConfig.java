@@ -45,8 +45,10 @@ public class SecurityConfig {
                                 "/configuration/security",
                                 "/swagger-ui/**",
                                 "/webjars/**",
-                                "/swagger-ui.html"
-                        ).permitAll()
+                                "/swagger-ui.html",
+                                "/account-payments/**",
+                                "/Account/**"
+                                ).permitAll()
 
                         // ADMIN-only secured endpoints
                         .requestMatchers(
@@ -64,8 +66,6 @@ public class SecurityConfig {
                                 "/Payment/**",
                                 "/Police/**",
                                 "/Sinistre/**",
-                                "/AccountPayment/**",
-                                "/Account/**",
                                 "/Agency/**",
                                 "/CreditPool/**",
                                 "/Request/**"
@@ -74,7 +74,6 @@ public class SecurityConfig {
                         // AGENT-only secured endpoints
                         .requestMatchers(
                                 "/Request/**",
-                                "/account-payments/**",
                                 "/Contract/**",
                                 "/Object/**",
                                 "/Person/**",

@@ -27,4 +27,6 @@ public interface IAccountService {
     void checkNissabStatus(Account account);
     List<Account> getPoorAccountsSorted(int year);
     void distributeZakatToPoorAccounts(int year);
+    Account retrieveAccountByRib(String rib);
+
 }

@@ -23,7 +23,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/v1/Account")
+@RequestMapping("Account")
 public class AccountController {
     IAccountService accountService;
     private final JwtService jwtService;
@@ -32,8 +32,9 @@ public class AccountController {
 
     @PostMapping("/addaccount")
     public Account ajouterAccount(@Valid @RequestBody Account account, @RequestHeader("Authorization") String token) {
-        Users adminUser = extractUser(token);
-        account.setUser(adminUser);
+        Users agent = extractUser(token); // Agent is extracted from the token
+        account.setAgent(agent); // Renamed from setUser
+        account.setClientEmail(account.getClientEmail()); // Ensure clientEmail is set in the request
         return accountService.AddAccount(account);
     }
 
@@ -75,23 +76,23 @@ public class AccountController {
         return accountService.findByAmountGreaterThan(minAmount);
     }
 
-    @GetMapping("/{id}/future-value")
-    public ResponseEntity<Double> calculateFutureValue(
-            @PathVariable("id") Integer accountId,
-            @RequestParam("targetDate") String targetDate) {
-        LocalDate date = LocalDate.parse(targetDate);
-        double futureValue = accountService.calculateFutureValue(accountId, date);
-        return ResponseEntity.ok(futureValue);
-    }
-
-    @GetMapping("/{id}/interest-gained")
-    public ResponseEntity<Double> calculateInterestGained(
-            @PathVariable("id") Integer accountId,
-            @RequestParam("targetDate") String targetDate) {
-        LocalDate date = LocalDate.parse(targetDate);
-        double interest = accountService.calculateInterestGained(accountId, date);
-        return ResponseEntity.ok(interest);
-    }
+//    @GetMapping("/{id}/future-value")
+//    public ResponseEntity<Double> calculateFutureValue(
+//            @PathVariable("id") Integer accountId,
+//            @RequestParam("targetDate") String targetDate) {
+//        LocalDate date = LocalDate.parse(targetDate);
+//        double futureValue = accountService.calculateFutureValue(accountId, date);
+//        return ResponseEntity.ok(futureValue);
+//    }
+//
+//    @GetMapping("/{id}/interest-gained")
+//    public ResponseEntity<Double> calculateInterestGained(
+//            @PathVariable("id") Integer accountId,
+//            @RequestParam("targetDate") String targetDate) {
+//        LocalDate date = LocalDate.parse(targetDate);
+//        double interest = accountService.calculateInterestGained(accountId, date);
+//        return ResponseEntity.ok(interest);
+//    }
 
     @GetMapping("/export-excel")
     public ResponseEntity<byte[]> exportAccountsToExcel() throws Exception {
@@ -104,10 +105,10 @@ public class AccountController {
         return ResponseEntity.ok().headers(headers).body(excelBytes);
     }
 
-    @GetMapping("/zakat-eligible")
-    public List<Account> getZakatEligibleAccounts() {
-        return accountService.getZakatEligibleAccounts();
-    }
+//    @GetMapping("/zakat-eligible")
+//    public List<Account> getZakatEligibleAccounts() {
+//        return accountService.getZakatEligibleAccounts();
+//    }
 
     @PostMapping("/{id}/zakat-transaction")
     public Account addZakatTransaction(
@@ -126,19 +127,24 @@ public class AccountController {
         return ResponseEntity.ok().headers(headers).body(pdfBytes);
     }
 
-    @GetMapping("/poor-accounts")
-    public List<Account> getPoorAccountsSorted(@RequestParam int year) {
-        return accountService.getPoorAccountsSorted(year);
-    }
-
-    @PostMapping("/distribute-zakat")
-    public ResponseEntity<String> distributeZakatToPoorAccounts(@RequestParam int year) {
-        accountService.distributeZakatToPoorAccounts(year);
-        return ResponseEntity.ok("Zakat distribuée avec succès pour l'année " + year);
-    }
+//    @GetMapping("/poor-accounts")
+//    public List<Account> getPoorAccountsSorted(@RequestParam int year) {
+//        return accountService.getPoorAccountsSorted(year);
+//    }
+//
+//    @PostMapping("/distribute-zakat")
+//    public ResponseEntity<String> distributeZakatToPoorAccounts(@RequestParam int year) {
+//        accountService.distributeZakatToPoorAccounts(year);
+//        return ResponseEntity.ok("Zakat distribuée avec succès pour l'année " + year);
+//    }
 
     private Users extractUser(String token) {
         String email = jwtService.extractUsername(token.replace("Bearer ", ""));
         return authService.getUserByEmail(email);
+    }
+    // Add this new endpoint
+    @GetMapping("/by-rib/{rib}")
+    public Account retrieveAccountByRib(@PathVariable String rib) {
+        return accountService.retrieveAccountByRib(rib);
     }
 }

@@ -3,11 +3,15 @@ package com.ghoul.AmanaFund.service;
 import com.ghoul.AmanaFund.entity.Account;
 import com.ghoul.AmanaFund.entity.AccountPayment;
 import com.ghoul.AmanaFund.entity.AccountType;
+import com.ghoul.AmanaFund.entity.Users;
 import com.ghoul.AmanaFund.repository.AccountPaymentRepository;
 import com.ghoul.AmanaFund.repository.AccountRepository;
+import com.ghoul.AmanaFund.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.apache.poi.ss.usermodel.*;
@@ -29,6 +33,7 @@ import java.util.stream.Collectors;
 public class accountService implements IAccountService {
     AccountRepository accountRepository;
     AccountPaymentRepository accountPaymentRepository;
+    UserRepository userRepository; // Add UserRepository dependency
 
     private static final double NISSAB = 1000.0;
     private static final double ZAKAT_RATE = 0.025; // 2.5% pour la Zakat
@@ -38,22 +43,27 @@ public class accountService implements IAccountService {
 
     @Override
     public Account AddAccount(Account account) {
+        // Validate client's email exists
+        Users client = userRepository.findByEmail(account.getClientEmail())
+                .orElseThrow(() -> new IllegalArgumentException("Client email does not exist"));
+
+        // Agent is already set in the controller via account.setAgent()
+        // Generate RIB and set interest rate
         if (account.getRib() == null || account.getRib().isBlank()) {
             account.setRib(generateUniqueRib());
         }
         if (account.getInterestRate() == null) {
             switch (account.getAccountType()) {
                 case EPARGNE:
-                    account.setInterestRate(0.015); // 1,5% par an
+                    account.setInterestRate(0.0799);
                     break;
                 case EPARGNE_ZEKET:
-                    account.setInterestRate(0.025); // 2,5% par an
+                    account.setInterestRate(0.05);
                     break;
             }
         }
         checkNissabStatus(account);
-        accountRepository.save(account);
-        return account;
+        return accountRepository.save(account);
     }
 
     @Override
@@ -299,5 +309,10 @@ public class accountService implements IAccountService {
             rib = "TN" + String.format("%018d", new Random().nextInt(999999999) + 1000000000);
         } while (accountRepository.findByRib(rib).isPresent());
         return rib;
+    }
+    @Override
+    public Account retrieveAccountByRib(String rib) {
+        return accountRepository.findByRib(rib)
+                .orElseThrow(() -> new RuntimeException("Account not found with RIB: " + rib));
     }
 }
