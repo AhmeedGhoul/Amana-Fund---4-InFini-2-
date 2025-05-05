@@ -12,7 +12,7 @@ import java.util.List;
 public interface IpersonService {
     Person addGPerson(Person person);
     List<PersonDTO> retrievePersons();
-    Person updatePerson(Person person);
+    Person updatePersonFromDTO(PersonDTO person);
     PersonDTO retrievePerson(Long idPerson);
     void removePerson(Long idPerson);
     public Page<PersonDTO> getAllPaginated(Pageable pageable);

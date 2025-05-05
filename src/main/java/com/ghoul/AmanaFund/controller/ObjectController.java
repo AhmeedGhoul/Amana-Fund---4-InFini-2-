@@ -3,7 +3,9 @@ package com.ghoul.AmanaFund.controller;
 import com.ghoul.AmanaFund.DTO.ObjectGDTO;
 import com.ghoul.AmanaFund.entity.ObjectG;
 import com.ghoul.AmanaFund.entity.Person;
+import com.ghoul.AmanaFund.service.ObjectGDTOMapper;
 import com.ghoul.AmanaFund.service.ObjectService;
+import com.ghoul.AmanaFund.service.PersonDTOMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,7 @@ import java.util.List;
 @Slf4j
 @RequestMapping("/object")
 public class ObjectController {
+    private final ObjectGDTOMapper objectGDTOMapper;
     @Autowired
     private ObjectService objectService;
     @PostMapping("/add_object")
@@ -34,9 +37,13 @@ public class ObjectController {
         return objectService.retrieveObjectGs();
     }
     @PutMapping("/update_object")
-    public ObjectG updateObject(@RequestBody ObjectG objectG)
+    public ObjectGDTO updateObject(@RequestBody ObjectGDTO objectGDTO)
     {
-        return objectService.updateObjectG(objectG);
+        if (objectGDTO == null) {
+            throw new RuntimeException("Object should have value");
+        }
+        ObjectG updatedobject = objectService.updateObjectGFromDTO(objectGDTO);
+        return objectGDTOMapper.apply(updatedobject);
     }
 
     @DeleteMapping("/remove_object/{id}")

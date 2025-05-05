@@ -25,6 +25,8 @@ import java.util.stream.Collectors;
 @Service
 @AllArgsConstructor
 public class PersonService implements IpersonService{
+    @Autowired
+    private IpoliceRepository policeRepository;
     private final PersonDTOMapper personDTOMapper;
     @Autowired
     private IpersonRepository ipersonRepository;
@@ -65,14 +67,28 @@ public class PersonService implements IpersonService{
                 ;
     }
     @Override
-    public Person updatePerson(Person person) {
-        if (person.getPolice() != null) {
-            Hibernate.initialize(person.getPolice());
+    public Person updatePersonFromDTO(PersonDTO dto) {
+        Person person = ipersonRepository.findById(dto.getIdGarantie())
+                .orElseThrow(() -> new RuntimeException("Person not found"));
+
+        person.setName(dto.getName());
+        person.setLast_name(dto.getLastName());
+        person.setCIN(dto.getCin());
+        person.setEmail(dto.getEmail());
+        person.setAge(dto.getAge());
+        person.setRevenue(dto.getRevenue());
+        person.setActive(dto.isActive());
+        person.setDocuments(dto.getDocuments());
+
+        if (dto.getPoliceId() != null) {
+            Police police = policeRepository.findById(dto.getPoliceId())
+                    .orElseThrow(() -> new RuntimeException("Police not found"));
+            person.setPolice(police);
         }
-        else
-            throw new RuntimeException("polie is null");
+
         return ipersonRepository.save(person);
     }
+
     @Override
     public PersonDTO retrievePerson(Long idPerson) {
         return ipersonRepository.findById(idPerson)

@@ -3,6 +3,7 @@ package com.ghoul.AmanaFund.controller;
 import com.ghoul.AmanaFund.DTO.PersonDTO;
 import com.ghoul.AmanaFund.entity.Person;
 import com.ghoul.AmanaFund.entity.Police;
+import com.ghoul.AmanaFund.service.PersonDTOMapper;
 import com.ghoul.AmanaFund.service.PersonService;
 import com.ghoul.AmanaFund.service.PoliceService;
 import lombok.AllArgsConstructor;
@@ -22,6 +23,7 @@ import java.util.List;
 @Slf4j
 @RequestMapping("/person")
 public class PersonController {
+    private final PersonDTOMapper personDTOMapper;
     @Autowired
     private PersonService personService;
     @PostMapping("/add_person")
@@ -37,11 +39,12 @@ public class PersonController {
         return personService.retrievePersons();
     }
     @PutMapping("/update_person")
-    public Person updatePerson(@RequestBody Person person)
-    {
-        if (person==null)
+    public PersonDTO updatePerson(@RequestBody PersonDTO personDTO) {
+        if (personDTO == null) {
             throw new RuntimeException("Person should have value");
-        return personService.updatePerson(person);
+        }
+        Person updatedPerson = personService.updatePersonFromDTO(personDTO);
+        return personDTOMapper.apply(updatedPerson);
     }
     @DeleteMapping("/remove_person/{id}")
     public void removePerson(@PathVariable long id) {

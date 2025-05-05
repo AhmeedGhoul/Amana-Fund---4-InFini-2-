@@ -85,7 +85,7 @@ public class PoliceController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Police>> searchPolice(
+    public ResponseEntity<List<PoliceDTO>> searchPolice(
             @RequestParam(value = "start", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
             @RequestParam(value = "amount", required = false) Double amount,
             @RequestParam(value = "id", required = false) Long id
@@ -98,7 +98,7 @@ public class PoliceController {
             List<PoliceDTO> dtoList = results.stream()
                     .map(policeDTOMapper)
                     .toList();
-            return new ResponseEntity<>(results, HttpStatus.OK);
+            return new ResponseEntity<>(dtoList, HttpStatus.OK);
         } catch (Exception e) {
             // Log the exception
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);

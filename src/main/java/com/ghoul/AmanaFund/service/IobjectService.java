@@ -11,7 +11,7 @@ import java.util.List;
 public interface IobjectService {
     ObjectG addGObjectG(ObjectG objectG);
     List<ObjectGDTO> retrieveObjectGs();
-    ObjectG updateObjectG(ObjectG objectG);
+    ObjectG updateObjectGFromDTO(ObjectGDTO dto);
     ObjectGDTO retrieveObjectG(Long idObjectG);
     void removeObjectG(Long idObjectG);
     public Page<ObjectGDTO> getAllPaginated(Pageable pageable);
