@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/pidev?useSSL=false&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/Pidev?useSSL=false&serverTimezone=UTC
     username: root
     password:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -28,6 +28,10 @@ spring:
     database: mysql
     database-platform: org.hibernate.dialect.MySQLDialect
 
+signature:
+  image:
+    path=/path/to/your/signature:
+      png:
 application:
   security:
     jwt:
