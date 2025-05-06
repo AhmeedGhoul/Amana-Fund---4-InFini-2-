@@ -1,6 +1,8 @@
 package com.ghoul.AmanaFund.controller;
 import com.ghoul.AmanaFund.DTO.PoliceDTO;
 import com.ghoul.AmanaFund.repository.IpoliceRepository;
+import com.ghoul.AmanaFund.security.JwtService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,8 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequestMapping("/police")
 public class PoliceController {
+    private final JwtService jwtService;
+    private final AuthenticationService authService;
     private final PoliceDTOMapper policeDTOMapper;
     @Autowired
     private PoliceService policeService;
@@ -44,8 +48,10 @@ public class PoliceController {
     @Autowired
     private PDFpoliceService pdFpoliceService;
     @PostMapping("/add_police")
-    public Police addPolice(@RequestBody Police police)
+    public Police addPolice(@Valid @RequestBody Police police /*, @RequestHeader("Authorization") String token*/)
     {
+       /* Users adminUser = extractUser(token);
+        police.setUser(adminUser);*/
         return policeService.addPolice(police);
     }
     @GetMapping("/getall_police")
@@ -147,6 +153,10 @@ public class PoliceController {
         } catch (ParseException e) {
             throw new IllegalArgumentException("Invalid date format. Expected format: yyyy-MM-dd");
         }
+    }
+    private Users extractUser(String token) {
+        String email = jwtService.extractUsername(token.replace("Bearer ", ""));
+        return authService.getUserByEmail(email);
     }
 
 }

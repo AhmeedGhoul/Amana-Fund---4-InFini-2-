@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @AllArgsConstructor
@@ -37,6 +38,14 @@ public class PersonController {
     public List<PersonDTO> GetAllPerson()
     {
         return personService.retrievePersons();
+    }
+    @GetMapping("/risk-levels")
+    public Map<String, String> getAllRiskLevels() {
+        return personService.calculateAllPersonRiskLevels();
+    }
+    @GetMapping("/{id}/score")
+    public double getPersonScoreById(@PathVariable Long id) {
+        return personService.calculatePersonScoreById(id);
     }
     @PutMapping("/update_person")
     public PersonDTO updatePerson(@RequestBody PersonDTO personDTO) {

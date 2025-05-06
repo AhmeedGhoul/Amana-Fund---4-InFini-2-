@@ -17,7 +17,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.mail.javamail.JavaMailSender;
 
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -108,8 +110,61 @@ public class PersonService implements IpersonService{
     }
 
 
-    public void CalculatePremium()
-    {
+    public Map<String, String> calculateAllPersonRiskLevels() {
+        List<Person> persons = ipersonRepository.findAll();
+        Map<String, String> riskLevels = new HashMap<>();
 
+        for (Person person : persons) {
+            double revenueScore = person.getRevenue() / 100;
+            int ageScore = (person.getAge() >= 25 && person.getAge() <= 50) ? 30 : 10;
+
+            int cinPrefixScore;
+            try {
+                String cinPrefix = person.getCIN().substring(0, 3);
+                cinPrefixScore = Integer.parseInt(cinPrefix);
+            } catch (Exception e) {
+                riskLevels.put(person.getName() + " " + person.getLast_name(), "INVALID_CIN");
+                continue;
+            }
+
+            double totalScore = revenueScore + ageScore + cinPrefixScore;
+            String risk;
+
+            if (totalScore > 130) {
+                risk = "LOW";
+            } else if (totalScore >= 100) {
+                risk = "MEDIUM";
+            } else {
+                risk = "HIGH";
+            }
+
+            riskLevels.put(person.getName() + " " + person.getLast_name(), risk);
+        }
+
+        return riskLevels;
     }
+
+    public double calculatePersonScoreById(Long id) {
+        Person person = ipersonRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Person not found with id: " + id));
+
+        double revenueScore = person.getRevenue() / 100;
+        int ageScore = (person.getAge() >= 25 && person.getAge() <= 50) ? 30 : 10;
+
+        int cinPrefixScore;
+        try {
+            String cinPrefix = person.getCIN().substring(0, 3);
+            cinPrefixScore = Integer.parseInt(cinPrefix);
+        } catch (Exception e) {
+            throw new RuntimeException("Invalid CIN format for person: " + person.getCIN());
+        }
+
+        double totalScore = revenueScore + ageScore + cinPrefixScore;
+
+        System.out.println("Score for person " + person.getName() + " (ID: " + id + ") is: " + totalScore);
+
+        return totalScore;
+    }
+
+
 }
