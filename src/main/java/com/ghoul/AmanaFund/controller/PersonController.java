@@ -55,6 +55,11 @@ public class PersonController {
         Person updatedPerson = personService.updatePersonFromDTO(personDTO);
         return personDTOMapper.apply(updatedPerson);
     }
+    @GetMapping("/search-by-cin")
+    public PersonDTO searchPersonByCIN(@RequestParam String cin) {
+        return personService.findByCIN(cin);
+    }
+
     @DeleteMapping("/remove_person/{id}")
     public void removePerson(@PathVariable long id) {
         personService.removePerson(id);

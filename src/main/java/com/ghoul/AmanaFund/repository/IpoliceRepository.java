@@ -7,6 +7,7 @@ import com.ghoul.AmanaFund.entity.*;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 
@@ -20,5 +21,6 @@ public interface IpoliceRepository extends JpaRepository<Police,Long>{
             @Param("amount") Double amount,
             @Param("id") Long id
     );
+
 //    List<Police> findByEndBetween(Date start, Date end);
 }

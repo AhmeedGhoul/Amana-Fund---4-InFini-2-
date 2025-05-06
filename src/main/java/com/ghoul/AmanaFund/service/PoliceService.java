@@ -67,6 +67,16 @@ public class PoliceService implements IpoliceService{
             throw new RuntimeException("police should not be null");
         return ipoliceRepository.save(police);
     }
+    @Override
+    public Police deactivatePolice(Long id) {
+        Police police = ipoliceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Police not found with id " + id));
+        if (police.isActive())
+            police.setActive(false);
+        else
+            police.setActive(true);
+        return ipoliceRepository.save(police);
+    }
 
     @Override
     public PoliceDTO retrievePolice(Long idPolice) {
@@ -91,6 +101,7 @@ public class PoliceService implements IpoliceService{
     public List<Police> searchPolice(Date start, Double amount, Long id) {
         return ipoliceRepository.searchPolice(start, amount, id);
     }
+
 
     public Double calculateTotalAmountPaid(Long policeId) {
         Optional<Police> policeOptional = ipoliceRepository.findById(policeId);

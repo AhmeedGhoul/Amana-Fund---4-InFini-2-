@@ -85,6 +85,16 @@ public class PoliceController {
         return policeService.updatePolice(police);
     }
 
+    @PutMapping("/{id}/deactivate")
+    public ResponseEntity<Police> deactivatePolice(@PathVariable Long id) {
+        try {
+            Police updatedPolice = policeService.deactivatePolice(id);
+            return new ResponseEntity<>(updatedPolice, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+
     @DeleteMapping("/removepolice/{id}")
     public void removePolice(@PathVariable long id) {
         policeService.removePolice(id);

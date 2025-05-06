@@ -165,6 +165,10 @@ public class PersonService implements IpersonService{
 
         return totalScore;
     }
-
+    public PersonDTO findByCIN(String cin) {
+        Person person = ipersonRepository.findByCIN(cin)
+                .orElseThrow(() -> new RuntimeException("Person not found with CIN: " + cin));
+        return personDTOMapper.apply(person);
+    }
 
 }

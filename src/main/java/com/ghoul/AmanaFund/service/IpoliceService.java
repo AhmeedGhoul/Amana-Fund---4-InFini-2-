@@ -16,6 +16,7 @@ public interface IpoliceService {
     Police updatePolice(Police police);
 
     PoliceDTO retrievePolice(Long idPolice);
+    Police deactivatePolice(Long id);
 
     void removePolice(Long idPolice);
 
