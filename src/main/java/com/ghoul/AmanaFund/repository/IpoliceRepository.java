@@ -13,13 +13,9 @@ import java.util.Optional;
 
 public interface IpoliceRepository extends JpaRepository<Police,Long>{
     @Query("SELECT p FROM Police p WHERE " +
-            "(:start IS NULL OR p.start = :start) AND " +
-            "(:amount IS NULL OR p.amount = :amount) AND " +
-            "(:id IS NULL OR p.idPolice = :id)")
+            "(:amount IS NULL OR p.amount = :amount)")
     List<Police> searchPolice(
-            @Param("start") Date start,
-            @Param("amount") Double amount,
-            @Param("id") Long id
+            @Param("amount") Double amount
     );
 
 //    List<Police> findByEndBetween(Date start, Date end);

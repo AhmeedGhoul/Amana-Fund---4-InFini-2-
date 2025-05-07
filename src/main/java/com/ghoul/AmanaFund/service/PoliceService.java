@@ -98,8 +98,8 @@ public class PoliceService implements IpoliceService{
     }
 
     @Override
-    public List<Police> searchPolice(Date start, Double amount, Long id) {
-        return ipoliceRepository.searchPolice(start, amount, id);
+    public List<Police> searchPolice(Double amount) {
+        return ipoliceRepository.searchPolice(amount);
     }
 
 

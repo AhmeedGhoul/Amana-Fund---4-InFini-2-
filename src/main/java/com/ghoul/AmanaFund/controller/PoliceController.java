@@ -102,12 +102,10 @@ public class PoliceController {
 
     @GetMapping("/search")
     public ResponseEntity<List<PoliceDTO>> searchPolice(
-            @RequestParam(value = "start", required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") Date start,
-            @RequestParam(value = "amount", required = false) Double amount,
-            @RequestParam(value = "id", required = false) Long id
+            @RequestParam(value = "amount", required = false) Double amount
     ) {
         try {
-            List<Police> results = policeService.searchPolice(start, amount, id);
+            List<Police> results = policeService.searchPolice(amount);
             if (results.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }

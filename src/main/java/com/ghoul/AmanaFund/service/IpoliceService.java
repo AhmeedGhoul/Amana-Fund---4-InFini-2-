@@ -22,5 +22,5 @@ public interface IpoliceService {
 
     public Page<PoliceDTO> getAllPaginated(Pageable pageable);
 
-    public List<Police> searchPolice(Date start, Double amount, Long id);
+    public List<Police> searchPolice(Double amount);
 }

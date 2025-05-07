@@ -270,6 +270,10 @@ public class    AuthenticationService {
 
         smSService.sendSms(user.getPhoneNumber(), smsMessage);
     }
+    public List<Users> getAllUsers()
+    {
+        return userRepository.findAll();
+    }
     public Page<Users> getAllUsersPaginated(int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdDate"));
         return userRepository.findAll(pageable);

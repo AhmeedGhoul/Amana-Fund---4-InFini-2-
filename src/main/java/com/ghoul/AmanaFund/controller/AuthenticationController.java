@@ -1,5 +1,6 @@
 package com.ghoul.AmanaFund.controller;
 
+import com.ghoul.AmanaFund.DTO.PoliceDTO;
 import com.ghoul.AmanaFund.Dao.AuthenticationRequest;
 import com.ghoul.AmanaFund.Dao.GrantRoleRequest;
 import com.ghoul.AmanaFund.Dao.RegistrationRequest;
@@ -165,6 +166,11 @@ public class AuthenticationController {
 
         Page<Users> users = authService.searchUsersPaginated(firstName, lastName, email, age, phoneNumber, dateOfBirth, enabled, sortBy, page, size);
         return ResponseEntity.ok(users);
+    }
+    @GetMapping("/getall_users")
+    public List<Users> GetAllUsers()
+    {
+        return authService.getAllUsers();
     }
     @GetMapping("/generateUserReport")
     public ResponseEntity<Void> generateUserReport(
