@@ -17,6 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NotificationService {
     private final NotificationRepository notificationRepository;
+    private final FraudCaseRepository fraudCaseRepository;
 
     public void notifyUser(Users user, String message) {
         Notification notification = new Notification(null, message, false, user, LocalDateTime.now());
@@ -32,6 +33,13 @@ public class NotificationService {
             n.setSeen(true);
             notificationRepository.save(n);
         });
+    }
+    public void notifyPendingFraudCases(Users user) {
+        List<FraudCases> pendingCases = fraudCaseRepository.findByResponsibleUserAndCaseStatus(user, CaseStatus.PENDING);
+        if (!pendingCases.isEmpty()) {
+            String message = "You have pending fraud cases to review!";
+            notifyUser(user, message);  // Notify the user
+        }
     }
 }
 

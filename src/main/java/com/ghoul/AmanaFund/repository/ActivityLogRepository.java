@@ -1,6 +1,7 @@
 package com.ghoul.AmanaFund.repository;
 
 import com.ghoul.AmanaFund.entity.ActivityLog;
+import com.ghoul.AmanaFund.entity.Audit;
 import com.ghoul.AmanaFund.entity.Users;
 import org.apache.catalina.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -16,4 +17,6 @@ public interface ActivityLogRepository extends JpaRepository<ActivityLog, Intege
     List<ActivityLog> findByUser(Users user);
     @Query("SELECT l FROM ActivityLog l JOIN FETCH l.user WHERE l.activityDate >= :timeLimit ORDER BY l.activityDate DESC")
     List<ActivityLog> getRecentLogs(LocalDateTime timeLimit);
+
+    List<ActivityLog> findActivityLogByAudit(Audit audit);
 }

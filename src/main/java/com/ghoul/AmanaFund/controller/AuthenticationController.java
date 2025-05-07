@@ -1,9 +1,6 @@
 package com.ghoul.AmanaFund.controller;
 
-import com.ghoul.AmanaFund.Dao.AuthenticationRequest;
-import com.ghoul.AmanaFund.Dao.GrantRoleRequest;
-import com.ghoul.AmanaFund.Dao.RegistrationRequest;
-import com.ghoul.AmanaFund.Dao.ResetPassRequest;
+import com.ghoul.AmanaFund.Dao.*;
 import com.ghoul.AmanaFund.entity.ActivityLog;
 import com.ghoul.AmanaFund.entity.Users;
 import com.ghoul.AmanaFund.repository.UserRepository;
@@ -14,7 +11,6 @@ import com.ghoul.AmanaFund.service.IpGeolocationService;
 import com.ghoul.AmanaFund.service.NotificationService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.mail.MessagingException;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -29,8 +25,7 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.Map;
 
 @RestController
 @RequestMapping("auth")
@@ -43,7 +38,7 @@ public class AuthenticationController {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private NotificationService notificationService;
+    private final NotificationService notificationService;
 
     @PostMapping("/register")
     public ResponseEntity<Void> createUser(@Valid @RequestBody RegistrationRequest request) throws IOException, MessagingException {
@@ -135,6 +130,9 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> verify2FACode(@RequestParam String token) throws MessagingException {
         try {
             AuthenticationResponse response = authService.activateAccount(token);
+            Users user = extractUser(response.getToken());
+            notificationService.notifyPendingFraudCases(user);
+
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthenticationResponse("Invalid 2FA code or expired token"));
@@ -196,6 +194,23 @@ public class AuthenticationController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthenticationResponse("Invalid or expired token."));
         }
     }
+    @PostMapping("/modify-password")
+    public ResponseEntity<AuthenticationResponse> modifyPassword(@RequestBody ModifyPassRequest modifyPassRequest) {
+        try {
+            authService.modifyPassword(
+                    modifyPassRequest.getUserId(),
+                    modifyPassRequest.getOldPassword(),
+                    modifyPassRequest.getNewPassword()
+            );
+            return ResponseEntity.ok(new AuthenticationResponse("Password changed successfully."));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new AuthenticationResponse(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new AuthenticationResponse("Something went wrong."));
+        }
+    }
+
+
 
 }
 

@@ -26,7 +26,6 @@ public class LogActivityMonitor {
     private final UserRepository userRepository;
 
 
-    @Scheduled(cron = "0 01 13 * * *") // Runs at 21:00 (9 PM) every day
     public void detectSuspiciousActivity() {
         LocalDateTime timeLimit = LocalDateTime.now().minusDays(15);
 

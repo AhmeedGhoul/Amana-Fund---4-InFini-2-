@@ -32,6 +32,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(req -> req
                         // Public endpoints (authentication-related only)
                         .requestMatchers(
+                                "/face-auth/**",
+                                "/notification/**",
                                 "/auth/register",
                                 "/auth/authenticate",
                                 "/auth/Promote",

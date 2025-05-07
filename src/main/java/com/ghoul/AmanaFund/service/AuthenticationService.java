@@ -1,7 +1,7 @@
 package com.ghoul.AmanaFund.service;
 
 import com.ghoul.AmanaFund.Dao.AuthenticationRequest;
-import com.ghoul.AmanaFund.controller.AuthenticationResponse;
+import com.ghoul.AmanaFund.Dao.AuthenticationResponse;
 import com.ghoul.AmanaFund.Dao.RegistrationRequest;
 import com.ghoul.AmanaFund.entity.EmailTemplateName;
 import com.ghoul.AmanaFund.repository.RoleRepository;
@@ -38,6 +38,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -90,7 +91,7 @@ public class    AuthenticationService {
 
         var user = ((Users) auth.getPrincipal());
         sendValidationEmail(user);
-        //sendValidationSms(user);
+       sendValidationSms(user);
     }
 
 
@@ -119,11 +120,10 @@ public class    AuthenticationService {
                 .token(jwtToken)
                 .build();
     }
-        public AuthenticationResponse activateAccount(String token) throws MessagingException {
+        public AuthenticationResponse activateAccount(String token)  {
             Token savedToken = tokenRepository.findByToken(token)
                     .orElseThrow(() -> new RuntimeException("Invalid token"));
             if (LocalDateTime.now().isAfter(savedToken.getExpiresAt())) {
-                sendValidationSms(savedToken.getUser());
                 throw new RuntimeException("Activation token has expired. A new token has been sent to the same phone number.");
             }
             var user = userRepository.findById(savedToken.getUser().getId())
@@ -217,7 +217,21 @@ public class    AuthenticationService {
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
+    public void modifyPassword(int userId, String oldPassword, String newPassword) {
+        Users user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new IllegalArgumentException("Incorrect old password.");
+        }
+
+        if (newPassword.length() < 8) {
+            throw new IllegalArgumentException("New password must be at least 8 characters.");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
     public void modifyUser(@Valid Users User) {
         var userr = userRepository.findByEmail(User.getEmail()).orElseThrow(() -> new IllegalStateException("USER NOT FOUND"));
         if (userr != null) {
@@ -227,7 +241,7 @@ public class    AuthenticationService {
                     .firstName(User.getFirstName())
                     .lastName(User.getLastName())
                     .email(User.getEmail())
-                    .password(passwordEncoder.encode(User.getPassword()))
+                    .password(userr.getPassword())
                     .accountLocked(userr.getAccountLocked())
                     .accountDeleted(userr.getAccountDeleted())
                     .age(User.getAge())
