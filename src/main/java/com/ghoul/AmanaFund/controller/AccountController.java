@@ -147,4 +147,11 @@ public class AccountController {
     public Account retrieveAccountByRib(@PathVariable String rib) {
         return accountService.retrieveAccountByRib(rib);
     }
+    @PutMapping("/updateaccount/{rib}")
+    public Account updateAccount(
+            @PathVariable String rib,
+            @Valid @RequestBody Account updatedAccount
+    ) {
+        return accountService.updateAccount(rib, updatedAccount);
+    }
 }

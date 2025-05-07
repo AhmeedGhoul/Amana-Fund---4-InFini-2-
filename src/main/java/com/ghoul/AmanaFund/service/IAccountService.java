@@ -28,5 +28,7 @@ public interface IAccountService {
     List<Account> getPoorAccountsSorted(int year);
     void distributeZakatToPoorAccounts(int year);
     Account retrieveAccountByRib(String rib);
+    Account updateAccount(String rib, Account updatedAccount);
+
 
 }

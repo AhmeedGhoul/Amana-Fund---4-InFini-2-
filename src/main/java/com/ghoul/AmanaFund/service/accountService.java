@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
@@ -119,29 +120,66 @@ public class accountService implements IAccountService {
 
     @Override
     public ByteArrayInputStream exportAccountsToExcel(List<Account> accounts) throws IOException {
-        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            Sheet sheet = workbook.createSheet("Accounts");
-            Row headerRow = sheet.createRow(0);
-            String[] columns = {"ID", "Date d'ouverture", "Type de compte", "Montant", "RIB", "Taux d'intérêt"};
-            for (int i = 0; i < columns.length; i++) {
-                Cell cell = headerRow.createCell(i);
-                cell.setCellValue(columns[i]);
-                CellStyle headerStyle = workbook.createCellStyle();
-                headerStyle.setFont(workbook.createFont());
-                cell.setCellStyle(headerStyle);
-            }
+        try (Workbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream out = new ByteArrayOutputStream()) {
 
+            // Create sheet and set basic properties
+            Sheet sheet = workbook.createSheet("Accounts");
+            sheet.setDefaultColumnWidth(20);
+
+            // Create header style
+            CellStyle headerStyle = createHeaderStyle(workbook);
+
+            // Create data style for dates
+            CellStyle dateStyle = workbook.createCellStyle();
+            dateStyle.setDataFormat(workbook.createDataFormat().getFormat("yyyy-mm-dd hh:mm"));
+
+            // Define all columns including new fields
+            String[] columns = {
+                    "ID",
+                    "Date d'ouverture",
+                    "Type de compte",
+                    "Montant",
+                    "RIB",
+                    "Taux d'intérêt",
+                    "Email Client",
+                    "Agent",
+                    "Transactions Zakat",
+                    "Dates Transactions Zakat",
+                    "Date Atteinte Nissab",
+                    "Éligible Zakat"
+            };
+
+            // Create header row
+            createHeaderRow(sheet, headerStyle, columns);
+
+            // Populate data rows
             int rowNum = 1;
             for (Account account : accounts) {
                 Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(account.getId());
-                row.createCell(1).setCellValue(account.getDate_Opening().toString());
-                row.createCell(2).setCellValue(account.getAccountType().toString());
-                row.createCell(3).setCellValue(account.getAmount() != null ? account.getAmount() : 0.0);
-                row.createCell(4).setCellValue(account.getRib());
-                row.createCell(5).setCellValue(account.getInterestRate() != null ? account.getInterestRate() : 0.0);
+
+                // Basic account info
+                createCell(row, 0, account.getId(), null);
+                createCell(row, 1, account.getDate_Opening(), dateStyle);
+                createCell(row, 2, account.getAccountType().toString(), null);
+                createCell(row, 3, account.getAmount() != null ? account.getAmount() : 0.0, null);
+                createCell(row, 4, account.getRib(), null);
+                createCell(row, 5, account.getInterestRate() != null ? account.getInterestRate() : 0.0, null);
+
+                // New fields
+                createCell(row, 6, account.getClientEmail(), null);
+                createCell(row, 7, account.getAgent() != null ? account.getAgent().getUsername() : "N/A", null);
+
+                // Zakat transactions info
+                createCell(row, 8, formatZakatTransactions(account.getZakatTransactions()), null);
+                createCell(row, 9, formatZakatDates(account.getZakatTransactionDates()), null);
+
+                // Nissab info
+                createCell(row, 10, account.getNissabReachedDate(), dateStyle);
+                createCell(row, 11, account.isEligibleForZakat() ? "Oui" : "Non", null);
             }
 
+            // Auto-size columns
             for (int i = 0; i < columns.length; i++) {
                 sheet.autoSizeColumn(i);
             }
@@ -149,6 +187,70 @@ public class accountService implements IAccountService {
             workbook.write(out);
             return new ByteArrayInputStream(out.toByteArray());
         }
+    }
+
+    // Helper method to create header style
+    private CellStyle createHeaderStyle(Workbook workbook) {
+        CellStyle headerStyle = workbook.createCellStyle();
+        Font headerFont = workbook.createFont();
+        headerFont.setBold(true);
+        headerFont.setColor(IndexedColors.WHITE.getIndex());
+        headerStyle.setFont(headerFont);
+        headerStyle.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
+        headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        headerStyle.setAlignment(HorizontalAlignment.CENTER);
+        return headerStyle;
+    }
+
+    // Helper method to create header row
+    private void createHeaderRow(Sheet sheet, CellStyle headerStyle, String[] columns) {
+        Row headerRow = sheet.createRow(0);
+        for (int i = 0; i < columns.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columns[i]);
+            cell.setCellStyle(headerStyle);
+        }
+    }
+
+    // Helper method to create cells with optional style
+    private void createCell(Row row, int column, Object value, CellStyle style) {
+        Cell cell = row.createCell(column);
+
+        if (value == null) {
+            cell.setCellValue("N/A");
+        } else if (value instanceof Number) {
+            cell.setCellValue(((Number) value).doubleValue());
+        } else if (value instanceof LocalDateTime) {
+            cell.setCellValue((LocalDateTime) value);
+            if (style != null) {
+                cell.setCellStyle(style);
+            }
+        } else if (value instanceof Boolean) {
+            cell.setCellValue((Boolean) value ? "Oui" : "Non");
+        } else {
+            cell.setCellValue(value.toString());
+        }
+    }
+
+    // Helper method to format zakat transactions
+    private String formatZakatTransactions(List<Double> transactions) {
+        if (transactions == null || transactions.isEmpty()) {
+            return "Aucune";
+        }
+        return transactions.stream()
+                .map(amount -> String.format("%.2f", amount))
+                .collect(Collectors.joining(", "));
+    }
+
+    // Helper method to format zakat dates
+    private String formatZakatDates(List<LocalDateTime> dates) {
+        if (dates == null || dates.isEmpty()) {
+            return "Aucune";
+        }
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        return dates.stream()
+                .map(formatter::format)
+                .collect(Collectors.joining(", "));
     }
 
     @Override
@@ -314,5 +416,38 @@ public class accountService implements IAccountService {
     public Account retrieveAccountByRib(String rib) {
         return accountRepository.findByRib(rib)
                 .orElseThrow(() -> new RuntimeException("Account not found with RIB: " + rib));
+    }
+
+    @Override
+    @Transactional
+    public Account updateAccount(String rib, Account updatedAccount) {
+        // Fetch the existing account by RIB
+        Account existingAccount = accountRepository.findByRib(rib)
+                .orElseThrow(() -> new RuntimeException("Account not found with RIB: " + rib));
+
+        // Capture old and new amounts
+        Double oldAmount = existingAccount.getAmount() != null ? existingAccount.getAmount() : 0.0;
+        Double newAmount = updatedAccount.getAmount() != null ? updatedAccount.getAmount() : 0.0;
+        Double difference = newAmount - oldAmount;
+
+        // Create payment if there's a change
+        if (difference != 0.0) {
+            AccountPayment payment = new AccountPayment();
+            payment.setPaymentDate(LocalDate.now());
+            payment.setAmount(difference);
+            payment.setAgencyName("system");
+            payment.setRib(existingAccount.getRib()); // Use the existing RIB
+            accountPaymentRepository.save(payment);
+        }
+
+        // Update fields from the incoming updatedAccount (except immutable fields like RIB)
+        existingAccount.setAmount(newAmount);
+        existingAccount.setAccountType(updatedAccount.getAccountType());
+        existingAccount.setClientEmail(updatedAccount.getClientEmail());
+        // Update other fields as needed (e.g., interestRate, agent, etc.)
+
+        // Check Nissab status and save
+        checkNissabStatus(existingAccount);
+        return accountRepository.save(existingAccount);
     }
 }
