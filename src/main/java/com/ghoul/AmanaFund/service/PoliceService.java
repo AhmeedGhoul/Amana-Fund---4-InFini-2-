@@ -1,6 +1,6 @@
 package com.ghoul.AmanaFund.service;
 import com.ghoul.AmanaFund.DTO.PoliceDTO;
-import com.ghoul.AmanaFund.entity.FrequencyPolice;
+import com.ghoul.AmanaFund.entity.*;
 import com.ghoul.AmanaFund.repository.IpoliceRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +9,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import com.ghoul.AmanaFund.entity.Police;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
@@ -89,6 +88,39 @@ public class PoliceService implements IpoliceService{
             throw new RuntimeException("idPolice should not be null");
         ipoliceRepository.deleteById(idPolice);
     }
+    public double getActivePolicePercentage() {
+        List<Police> allPolices = ipoliceRepository.findAll();
+        if (allPolices.isEmpty()) return 0;
+
+        long activeCount = allPolices.stream()
+                .filter(Police::isActive)
+                .count();
+
+        return (activeCount * 100.0) / allPolices.size();
+    }
+    public double calculateGuaranteedAmount(Long policeId) {
+        Optional<Police> policeOptional = ipoliceRepository.findById(policeId);
+
+        if (policeOptional.isEmpty()) {
+            throw new RuntimeException("Police not found with ID: " + policeId);
+        }
+
+        Police police = policeOptional.get();
+
+        double totalGuaranteedAmount = 0.0;
+
+        for (Garantie garantie : police.getGaranties()) {
+            if (garantie instanceof Person person) {
+                totalGuaranteedAmount += person.getRevenue();
+            } else if (garantie instanceof ObjectG objectG) {
+                totalGuaranteedAmount += objectG.getEstimatedValue();
+            }
+        }
+
+        return totalGuaranteedAmount;
+    }
+
+
 
     @Override
     public Page<PoliceDTO> getAllPaginated(Pageable  pageable) {

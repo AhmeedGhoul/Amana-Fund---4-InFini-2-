@@ -5,6 +5,7 @@ import com.ghoul.AmanaFund.security.JwtService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Page;
@@ -59,6 +60,11 @@ public class PoliceController {
     {
         return policeService.retrievePolices();
     }
+    @GetMapping("/get_policeById/{id}")
+    public PoliceDTO GetPoliceById(@PathVariable Long id)
+    {
+        return policeService.retrievePolice(id);
+    }
     @GetMapping("/paginated")
     public Page<PoliceDTO> getPaginatedContracts(
             @RequestParam(defaultValue = "0") int page,
@@ -78,10 +84,21 @@ public class PoliceController {
 
         return policeService.getAllPaginated(pageable);
     }
+    @GetMapping("/active-percentage")
+    public double getActivePolicePercentage() {
+        return policeService.getActivePolicePercentage();
+    }
+    @GetMapping("/{id}/guaranteed-amount")
+    public double getGuaranteedAmount(@PathVariable Long id) {
+        return policeService.calculateGuaranteedAmount(id);
+    }
+
 
     @PutMapping("/update_police")
-    public Police updatePolice(@RequestBody Police police)
+    public Police updatePolice(@RequestBody Police police /*,@RequestHeader("Authorization") String token*/)
     {
+        /*Users adminUser = extractUser(token);
+        police.setUser(adminUser);*/
         return policeService.updatePolice(police);
     }
 
