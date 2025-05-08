@@ -1,21 +1,29 @@
 package com.ghoul.AmanaFund.controller;
 
+import com.ghoul.AmanaFund.DTO.ObjectGDTO;
 import com.ghoul.AmanaFund.entity.ObjectG;
 import com.ghoul.AmanaFund.entity.Person;
+import com.ghoul.AmanaFund.service.ObjectGDTOMapper;
 import com.ghoul.AmanaFund.service.ObjectService;
-import com.ghoul.AmanaFund.service.PersonService;
+import com.ghoul.AmanaFund.service.PersonDTOMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
 @AllArgsConstructor
 @Slf4j
-@RequestMapping("Object")
+@RequestMapping("/object")
 public class ObjectController {
+    private final ObjectGDTOMapper objectGDTOMapper;
     @Autowired
     private ObjectService objectService;
     @PostMapping("/add_object")
@@ -24,18 +32,41 @@ public class ObjectController {
         return objectService.addGObjectG(objectG);
     }
     @GetMapping("/getall_object")
-    public List<ObjectG> GetAllObject()
+    public List<ObjectGDTO> GetAllObject()
     {
         return objectService.retrieveObjectGs();
     }
     @PutMapping("/update_object")
-    public ObjectG updateObject(@RequestBody ObjectG objectG)
+    public ObjectGDTO updateObject(@RequestBody ObjectGDTO objectGDTO)
     {
-        return objectService.updateObjectG(objectG);
+        if (objectGDTO == null) {
+            throw new RuntimeException("Object should have value");
+        }
+        ObjectG updatedobject = objectService.updateObjectGFromDTO(objectGDTO);
+        return objectGDTOMapper.apply(updatedobject);
     }
 
     @DeleteMapping("/remove_object/{id}")
     public void removeObject(@PathVariable long id) {
         objectService.removeObjectG(id);
+    }
+    @GetMapping("/paginated")
+    public Page<ObjectGDTO> getPaginatedPerson(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size,
+            @RequestParam(defaultValue = "ownershipCertifNumber") String sortBy,
+            @RequestParam(defaultValue = "asc") String direction
+    ) {
+        // Allow only "start" or "end" for sorting
+        List<String> allowedSortFields = Arrays.asList("estimatedValue", "ownershipCertifNumber" , "type");
+        if (!allowedSortFields.contains(sortBy)) {
+            throw new IllegalArgumentException("Invalid sort field. Choose between 'name' or 'age' or 'revenue'.");
+        }
+
+        // Apply sorting direction
+        Sort sort = direction.equalsIgnoreCase("desc") ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        return objectService.getAllPaginated(pageable);
     }
 }

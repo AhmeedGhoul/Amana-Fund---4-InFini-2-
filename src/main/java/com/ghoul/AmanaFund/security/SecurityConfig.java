@@ -47,6 +47,9 @@ public class SecurityConfig {
                                 "/configuration/security",
                                 "/swagger-ui/**",
                                 "/webjars/**",
+                                "/police/**",
+                                "/object/**",
+                                "/person/**",
                                 "/swagger-ui.html"
                         ).permitAll()
 
@@ -62,9 +65,7 @@ public class SecurityConfig {
                                 "/audit/**",
                                 "/contracts/**",
                                 "/case/**",
-                                "/Garantie/**",
                                 "/Payment/**",
-                                "/Police/**",
                                 "/Sinistre/**",
                                 "/AccountPayment/**",
                                 "/Account/**",
@@ -79,8 +80,6 @@ public class SecurityConfig {
                                 "/Request/**",
                                 "/account-payments/**",
                                 "/Contract/**",
-                                "/Object/**",
-                                "/Person/**",
                                 "/Sinitre/**"
                         ).hasRole("AGENT")
 
