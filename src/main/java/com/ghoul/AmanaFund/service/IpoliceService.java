@@ -9,11 +9,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface IpoliceService {
-    Police addPolice(Police police);
+    Police addPolice(PoliceDTO dto);
 
     List<PoliceDTO> retrievePolices();
 
-    Police updatePolice(Police police);
+    Police updatePolice(PoliceDTO police);
 
     PoliceDTO retrievePolice(Long idPolice);
     Police deactivatePolice(Long id);

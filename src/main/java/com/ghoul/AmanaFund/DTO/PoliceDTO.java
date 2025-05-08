@@ -19,5 +19,5 @@ public class PoliceDTO {
     private Double amount;
     private FrequencyPolice frequency;
     private Date renewalDate;
-    private Integer userId;
+    private int userId;
 }

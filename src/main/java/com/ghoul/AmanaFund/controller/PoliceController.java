@@ -48,11 +48,11 @@ public class PoliceController {
     @Autowired
     private PDFpoliceService pdFpoliceService;
     @PostMapping("/add_police")
-    public Police addPolice(@Valid @RequestBody Police police /*, @RequestHeader("Authorization") String token*/)
+    public Police addPolice(@Valid @RequestBody PoliceDTO dto /*, @RequestHeader("Authorization") String token*/)
     {
        /* Users adminUser = extractUser(token);
         police.setUser(adminUser);*/
-        return policeService.addPolice(police);
+        return policeService.addPolice(dto);
     }
     @GetMapping("/getall_police")
     public List<PoliceDTO> GetAllPolice()
@@ -107,11 +107,13 @@ public class PoliceController {
 
 
     @PutMapping("/update_police")
-    public Police updatePolice(@RequestBody Police police /*,@RequestHeader("Authorization") String token*/)
+    public Police updatePolice(@RequestBody PoliceDTO dto /*,@RequestHeader("Authorization") String token*/)
     {
+        System.out.println(dto.getUserId());
+
         /*Users adminUser = extractUser(token);
         police.setUser(adminUser);*/
-        return policeService.updatePolice(police);
+        return policeService.updatePolice(dto);
     }
 
     @PutMapping("/{id}/deactivate")
@@ -195,16 +197,14 @@ public class PoliceController {
         String email = jwtService.extractUsername(token.replace("Bearer ", ""));
         return authService.getUserByEmail(email);
     }
+    public record UserDTO(int id, String email) {}
+
     // In your UserController (or add to PoliceController if needed)
     @GetMapping("/getall_users")
-    public List<Map<String, Object>> getAllUsers() {
+    public List<UserDTO> getAllUsers() {
         return authenticationService.getAllUsers().stream()
-                .map(user -> {
-                    Map<String, Object> map = new HashMap<>();
-                    map.put("id", user.getId());
-                    map.put("email", user.getEmail());
-                    return map;
-                })
+                .map(user -> new UserDTO(user.getId(), user.getEmail()))
                 .collect(Collectors.toList());
     }
+
 }
