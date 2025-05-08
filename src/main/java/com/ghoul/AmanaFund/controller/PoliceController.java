@@ -71,6 +71,10 @@ public class PoliceController {
     public Map<Date, Double> getAmountByStartDate() {
         return policeService.getAmountSumByStartDate();
     }
+    @GetMapping("/total-amount")
+    public double getTotalAmount() {
+        return policeService.getTotalPoliceAmount();
+    }
 
     @GetMapping("/paginated")
     public Page<PoliceDTO> getPaginatedContracts(

@@ -95,6 +95,13 @@ public class PoliceService implements IpoliceService{
 
         return (activeCount * 100.0) / allPolices.size();
     }
+    public double getTotalPoliceAmount() {
+        List<Police> allPolices = ipoliceRepository.findAll();
+        return allPolices.stream()
+                .mapToDouble(Police::getAmount)
+                .sum();
+    }
+
     public double calculateGuaranteedAmount(Long policeId) {
         Optional<Police> policeOptional = ipoliceRepository.findById(policeId);
 
