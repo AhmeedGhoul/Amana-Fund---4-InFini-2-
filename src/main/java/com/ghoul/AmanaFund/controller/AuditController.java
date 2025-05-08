@@ -5,10 +5,7 @@ import com.ghoul.AmanaFund.entity.Audit;
 import com.ghoul.AmanaFund.entity.Users;
 import com.ghoul.AmanaFund.repository.ActivityLogRepository;
 import com.ghoul.AmanaFund.security.JwtService;
-import com.ghoul.AmanaFund.service.ActivityService;
-import com.ghoul.AmanaFund.service.AuditService;
-import com.ghoul.AmanaFund.service.AuthenticationService;
-import com.ghoul.AmanaFund.service.IpGeolocationService;
+import com.ghoul.AmanaFund.service.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +33,7 @@ public class AuditController {
     private final ActivityService activityService;
     private final IpGeolocationService ipGeolocationService;
     private final ActivityLogRepository activityLogRepository;
+    private final GroqService groqService;
 
     @PostMapping("/CreateAudit")
     public ResponseEntity<?> createAudit(@Valid @RequestBody Audit audit, @RequestHeader("Authorization") String token) throws IOException {
@@ -140,5 +138,30 @@ public class AuditController {
         String filePath = auditService.generateAuditReport(fetchedByUser, directoryPath, fileName);
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+    @GetMapping("/detect-suspicious-activity/{auditId}")
+    public ResponseEntity<String> detectSuspiciousActivity(@PathVariable int auditId) {
+        List<ActivityLog> auditLogs = activityLogRepository.findActivityLogByAudit(auditService.getAuditById(auditId));
+
+        if (auditLogs.isEmpty()) {
+            return ResponseEntity.ok("No activity logs found for this audit.");
+        }
+
+        try {
+            String analysis = groqService.analyzeLogs(auditLogs);
+
+            StringBuilder report = new StringBuilder();
+            report.append("=== Report for Audit ").append(auditId).append(" at ").append(LocalDateTime.now()).append(" ===\n")
+                    .append("Analysis:\n\n")
+                    .append(analysis).append("\n\nResult:\n");
+
+            boolean suspicious = analysis.toLowerCase().contains("suspicious") || analysis.toLowerCase().contains("unusual");
+
+            report.append(suspicious ? "Suspicious" : "Normal");
+            return ResponseEntity.ok(report.toString());
+
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body("Error during suspicious activity detection.");
+        }
     }
 }
