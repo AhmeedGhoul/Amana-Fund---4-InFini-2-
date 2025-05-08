@@ -40,6 +40,7 @@ public class PoliceService implements IpoliceService{
     public Police addPolice(Police police) {
         if (police==null)
             throw new RuntimeException("police should not be null");
+
         Police savedPolice = ipoliceRepository.save(police);
         // Ensure user and phone number exist
 

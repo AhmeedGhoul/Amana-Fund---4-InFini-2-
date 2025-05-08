@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RequestMapping("/police")
 public class PoliceController {
+    private final AuthenticationService authenticationService;
     private final JwtService jwtService;
     private final AuthenticationService authService;
     private final PoliceDTOMapper policeDTOMapper;
@@ -194,5 +195,16 @@ public class PoliceController {
         String email = jwtService.extractUsername(token.replace("Bearer ", ""));
         return authService.getUserByEmail(email);
     }
-
+    // In your UserController (or add to PoliceController if needed)
+    @GetMapping("/getall_users")
+    public List<Map<String, Object>> getAllUsers() {
+        return authenticationService.getAllUsers().stream()
+                .map(user -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("id", user.getId());
+                    map.put("email", user.getEmail());
+                    return map;
+                })
+                .collect(Collectors.toList());
+    }
 }
