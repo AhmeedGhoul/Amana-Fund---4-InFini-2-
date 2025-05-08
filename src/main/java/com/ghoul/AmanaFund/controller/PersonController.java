@@ -13,6 +13,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -63,6 +65,16 @@ public class PersonController {
     @DeleteMapping("/remove_person/{id}")
     public void removePerson(@PathVariable long id) {
         personService.removePerson(id);
+    }
+
+    @PutMapping("/{id}/deactivate")
+    public ResponseEntity<Person> deactivatePerson(@PathVariable Long id) {
+        try {
+            Person updatedPolice = personService.deactivatePerson(id);
+            return new ResponseEntity<>(updatedPolice, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
     @GetMapping("/paginated")
     public Page<PersonDTO> getPaginatedPerson(

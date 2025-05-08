@@ -7,6 +7,7 @@ import com.ghoul.AmanaFund.entity.Police;
 import com.ghoul.AmanaFund.repository.IgarantieRepository;
 import com.ghoul.AmanaFund.repository.IpersonRepository;
 import com.ghoul.AmanaFund.repository.IpoliceRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,16 @@ public class PersonService implements IpersonService{
     private IpersonRepository ipersonRepository;
     @Autowired
     private JavaMailSender mailSender;
+
+    public Person deactivatePerson(Long id) {
+        Person person = ipersonRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Person not found with id " + id));
+        if (person.isActive())
+            person.setActive(false);
+        else
+            person.setActive(true);
+        return ipersonRepository.save(person);
+    }
 
     @Override
     public Person addGPerson(Person person) {
