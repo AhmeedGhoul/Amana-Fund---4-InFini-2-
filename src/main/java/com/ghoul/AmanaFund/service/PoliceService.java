@@ -15,10 +15,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
@@ -41,12 +38,12 @@ public class PoliceService implements IpoliceService{
         Police savedPolice = ipoliceRepository.save(police);
         // Ensure user and phone number exist
 
-            String phoneNumber = "+21658413579";
-            String message = "Hello, your insurance policy (ID: " + savedPolice.getIdPolice() +
-                    ") has been successfully created. End date: " + savedPolice.getEnd() + ".";
+        String phoneNumber = "+21658413579";
+        String message = "Hello, your insurance policy (ID: " + savedPolice.getIdPolice() +
+                ") has been successfully created. End date: " + savedPolice.getEnd() + ".";
 
-            // Send SMS
-            /*twilioService.sendSms(phoneNumber, message);*/
+        // Send SMS
+        /*twilioService.sendSms(phoneNumber, message);*/
 
         return savedPolice;
     }
@@ -238,6 +235,24 @@ public class PoliceService implements IpoliceService{
 
         // Ensure the next payment date does not exceed the policy end date
         return nextPaymentDate.after(policyEndDate) ? null : nextPaymentDate;
+    }
+
+    public double calculateTotalActivePoliceAmount() {
+        return ipoliceRepository.findAll()
+                .stream()
+                .filter(Police::isActive)
+                .mapToDouble(Police::getAmount)
+                .sum();
+    }
+
+    public Map<Date, Double> getAmountSumByStartDate() {
+        return ipoliceRepository.findAll()
+                .stream()
+                .filter(police -> police.getStart() != null && police.getAmount() != null)
+                .collect(Collectors.groupingBy(
+                        Police::getStart,
+                        Collectors.summingDouble(Police::getAmount)
+                ));
     }
 
 
