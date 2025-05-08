@@ -36,6 +36,14 @@ public class PersonController {
             throw new RuntimeException("Person should have value");
         return personService.addDTOPerson(person);
     }
+    @PutMapping("/update_person")
+    public PersonDTO updatePerson(@RequestBody PersonDTO personDTO) {
+        if (personDTO == null) {
+            throw new RuntimeException("Person should have value");
+        }
+        Person updatedPerson = personService.updatePersonFromDTO(personDTO);
+        return personDTOMapper.apply(updatedPerson);
+    }
     @GetMapping("/getall_person")
     public List<PersonDTO> GetAllPerson()
     {
@@ -49,16 +57,9 @@ public class PersonController {
     public double getPersonScoreById(@PathVariable Long id) {
         return personService.calculatePersonScoreById(id);
     }
-    @PutMapping("/update_person")
-    public PersonDTO updatePerson(@RequestBody PersonDTO personDTO) {
-        if (personDTO == null) {
-            throw new RuntimeException("Person should have value");
-        }
-        Person updatedPerson = personService.updatePersonFromDTO(personDTO);
-        return personDTOMapper.apply(updatedPerson);
-    }
+
     @GetMapping("/search-by-cin")
-    public PersonDTO searchPersonByCIN(@RequestParam String cin) {
+    public List<PersonDTO> searchPersonByCIN(@RequestParam String cin) {
         return personService.findByCIN(cin);
     }
 
