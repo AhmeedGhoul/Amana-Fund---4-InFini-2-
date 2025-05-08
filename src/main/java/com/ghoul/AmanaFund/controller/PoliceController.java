@@ -27,10 +27,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -65,6 +63,15 @@ public class PoliceController {
     {
         return policeService.retrievePolice(id);
     }
+    @GetMapping("/active-total-amount")
+    public double getTotalActivePoliceAmount() {
+        return policeService.calculateTotalActivePoliceAmount();
+    }
+    @GetMapping("/amount-by-start-date")
+    public Map<Date, Double> getAmountByStartDate() {
+        return policeService.getAmountSumByStartDate();
+    }
+
     @GetMapping("/paginated")
     public Page<PoliceDTO> getPaginatedContracts(
             @RequestParam(defaultValue = "0") int page,
