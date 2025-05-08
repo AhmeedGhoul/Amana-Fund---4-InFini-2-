@@ -32,6 +32,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(req -> req
                         // Public endpoints (authentication-related only)
                         .requestMatchers(
+                                "/face-auth/**",
+                                "/notification/**",
                                 "/auth/register",
                                 "/auth/authenticate",
                                 "/auth/Promote",
@@ -52,6 +54,7 @@ public class SecurityConfig {
                                 "/Agency/**",
                                 "/Request/**",
                                 "/account-payments/**",
+                                "/auth/users",
                                 "/Account/**"
                         ).permitAll()
 
@@ -61,11 +64,10 @@ public class SecurityConfig {
                                 "/auth/Demote",
                                 "/auth/Modify",
                                 "/auth/Delete/**",
-                                "/auth/users",
+
                                 "/auth/generateUserReport",
                                 "/ActivityLog/**",
                                 "/audit/**",
-                                "/contracts/**",
                                 "/case/**",
                                 "/Garantie/**",
                                 "/Payment/**",
@@ -80,6 +82,7 @@ public class SecurityConfig {
                                 "/account-payments/**",
                                 "/Contract/**",
                                 "/Object/**",
+                                "/contracts/**",
                                 "/Person/**",
                                 "/Sinitre/**"
                         ).hasRole("AGENT")
