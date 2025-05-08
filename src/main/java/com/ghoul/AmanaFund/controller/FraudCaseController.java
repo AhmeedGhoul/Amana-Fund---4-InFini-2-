@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("case")
@@ -111,5 +112,15 @@ public class FraudCaseController {
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
+    @GetMapping("/totalFraudCases")
+    public ResponseEntity<Long> getTotalFraudCases() {
+        long totalFraudCases = fraudCaseService.getTotalFraudCases();
+        return ResponseEntity.ok(totalFraudCases);
+    }
 
+    @GetMapping("/fraudCasesByType")
+    public ResponseEntity<Map<String, Long>> getFraudCasesByType() {
+        Map<String, Long> fraudCasesByType = fraudCaseService.getFraudCasesByType();
+        return ResponseEntity.ok(fraudCasesByType);
+    }
 }

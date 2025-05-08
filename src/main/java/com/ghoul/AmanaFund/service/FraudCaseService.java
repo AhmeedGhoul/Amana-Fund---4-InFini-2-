@@ -135,9 +135,9 @@ public class FraudCaseService {
         return fraudCaseRepository.count();
     }
 
-    public Map<CaseType, Long> getFraudCasesByType() {
+    public Map<String, Long> getFraudCasesByType() {
         return fraudCaseRepository.findAll().stream()
-                .collect(Collectors.groupingBy(FraudCases::getCaseType, Collectors.counting()));
+                .collect(Collectors.groupingBy(fraudCase -> fraudCase.getCaseType().name(), Collectors.counting()));
     }
 
 }

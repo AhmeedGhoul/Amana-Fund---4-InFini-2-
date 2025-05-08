@@ -164,4 +164,15 @@ public class AuditController {
             return ResponseEntity.status(500).body("Error during suspicious activity detection.");
         }
     }
+    @GetMapping("/totalAudits")
+    public ResponseEntity<Long> getTotalAudits() {
+        long totalAudits = auditService.getTotalAudits();
+        return ResponseEntity.ok(totalAudits);
+    }
+
+    @GetMapping("/auditsWithFraudCases")
+    public ResponseEntity<Long> getAuditsWithFraudCases() {
+        long auditsWithFraudCases = auditService.getAuditsWithFraudCases();
+        return ResponseEntity.ok(auditsWithFraudCases);
+    }
 }

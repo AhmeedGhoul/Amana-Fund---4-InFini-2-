@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("ActivityLog")
 @Tag(name = "ActivityLog")
@@ -64,5 +66,10 @@ public class ActivityLogController {
         Users deletedByUser = service.getUserByEmail(email);
         String filePath = activityService.generateActivityLogReport(deletedByUser, directoryPath, fileName);
         return ResponseEntity.status(HttpStatus.CREATED).build();
+    }
+    @GetMapping("/mostCommonActivity")
+    public ResponseEntity<Map<String, Long>> getMostCommonActivity() {
+        Map<String, Long> commonActivities = activityService.getMostCommonActivity();
+        return ResponseEntity.ok(commonActivities);
     }
 }
