@@ -30,6 +30,8 @@ public class PersonService implements IpersonService{
     @Autowired
     private IpoliceRepository policeRepository;
     private final PersonDTOMapper personDTOMapper;
+    private final DTOPersonMapper dtoPersonMapper;
+
     @Autowired
     private IpersonRepository ipersonRepository;
     @Autowired
@@ -43,10 +45,27 @@ public class PersonService implements IpersonService{
         Person savedPerson = ipersonRepository.save(person);
 
         // Send confirmation email
-        sendConfirmationEmail(savedPerson);
+        /*sendConfirmationEmail(savedPerson);*/
 
         return savedPerson;
     }
+    public Person addDTOPerson(PersonDTO personDTO) {
+        if (personDTO == null) {
+            throw new RuntimeException("PersonDTO should not be null");
+        }
+
+        // Convert DTO to Entity
+        Person person = dtoPersonMapper.apply(personDTO);
+
+        // Save the entity
+        Person savedPerson = ipersonRepository.save(person);
+
+        // Optionally: Send confirmation email
+        // sendConfirmationEmail(savedPerson);
+
+        return savedPerson;
+    }
+
 
     private void sendConfirmationEmail(Person person) {
         SimpleMailMessage message = new SimpleMailMessage();

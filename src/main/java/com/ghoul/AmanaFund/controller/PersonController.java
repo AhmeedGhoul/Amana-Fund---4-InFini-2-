@@ -27,12 +27,12 @@ public class PersonController {
     private final PersonDTOMapper personDTOMapper;
     @Autowired
     private PersonService personService;
-    @PostMapping("/add_person")
-    public Person addPerson(@RequestBody Person person)
+    @PostMapping("/add_personG")
+    public Person addPerson(@RequestBody PersonDTO person)
     {
         if (person==null)
             throw new RuntimeException("Person should have value");
-        return personService.addGPerson(person);
+        return personService.addDTOPerson(person);
     }
     @GetMapping("/getall_person")
     public List<PersonDTO> GetAllPerson()

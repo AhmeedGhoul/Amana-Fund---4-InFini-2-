@@ -13,6 +13,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 import org.hibernate.engine.internal.Cascade;
 
 import java.util.Date;
@@ -27,7 +28,7 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-
+@SuperBuilder
 public class Police {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

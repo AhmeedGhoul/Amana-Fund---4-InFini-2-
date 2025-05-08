@@ -31,6 +31,11 @@ public class PoliceService implements IpoliceService{
     private IpoliceRepository ipoliceRepository;
     private final TwilioService twilioService;
 
+    public Police getPoliceById(Long id) {
+        return ipoliceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Police not found with id: " + id));
+    }
+
     @Override
     public Police addPolice(Police police) {
         if (police==null)
