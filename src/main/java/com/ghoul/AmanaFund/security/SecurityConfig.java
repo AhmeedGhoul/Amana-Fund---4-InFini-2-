@@ -50,7 +50,9 @@ public class SecurityConfig {
                                 "/object/**",
                                 "/person/**",
                                 "/Agency/**",
-                                "/Request/**"
+                                "/Request/**",
+                                "/account-payments/**",
+                                "/Account/**"
                         ).permitAll()
 
                         // ADMIN-only secured endpoints
@@ -65,10 +67,10 @@ public class SecurityConfig {
                                 "/audit/**",
                                 "/contracts/**",
                                 "/case/**",
+                                "/Garantie/**",
                                 "/Payment/**",
+                                "/Police/**",
                                 "/Sinistre/**",
-                                "/AccountPayment/**",
-                                "/Account/**",
                                 "/CreditPool/**"
                         ).hasRole("ADMIN")
 
@@ -77,6 +79,8 @@ public class SecurityConfig {
                                 "/Request/**",
                                 "/account-payments/**",
                                 "/Contract/**",
+                                "/Object/**",
+                                "/Person/**",
                                 "/Sinitre/**"
                         ).hasRole("AGENT")
 

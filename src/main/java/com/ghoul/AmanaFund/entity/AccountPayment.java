@@ -21,7 +21,6 @@ public class AccountPayment {
     @PastOrPresent(message = "La date de paiement ne peut pas être dans le futur")
     private LocalDate paymentDate;
 
-    @Positive(message = "Le montant doit être positif")
     private double amount;
 
     @NotBlank(message = "Le nom de l'agence est requis")
