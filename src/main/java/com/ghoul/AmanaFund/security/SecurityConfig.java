@@ -32,8 +32,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests(req -> req
                         // Public endpoints (authentication-related only)
                         .requestMatchers(
-                                "/face-auth/**",
-                                "/notification/**",
                                 "/auth/register",
                                 "/auth/authenticate",
                                 "/auth/Promote",
@@ -47,10 +45,12 @@ public class SecurityConfig {
                                 "/configuration/security",
                                 "/swagger-ui/**",
                                 "/webjars/**",
+                                "/swagger-ui.html",
                                 "/police/**",
                                 "/object/**",
                                 "/person/**",
-                                "/swagger-ui.html"
+                                "/Agency/**",
+                                "/Request/**"
                         ).permitAll()
 
                         // ADMIN-only secured endpoints
@@ -69,10 +69,7 @@ public class SecurityConfig {
                                 "/Sinistre/**",
                                 "/AccountPayment/**",
                                 "/Account/**",
-                                "/Agency/**",
-                                "/CreditPool/**",
-                                "/Request/**",
-                                "/notification/**"
+                                "/CreditPool/**"
                         ).hasRole("ADMIN")
 
                         // AGENT-only secured endpoints
