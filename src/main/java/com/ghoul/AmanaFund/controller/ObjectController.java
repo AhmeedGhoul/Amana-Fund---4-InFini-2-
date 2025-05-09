@@ -3,6 +3,7 @@ package com.ghoul.AmanaFund.controller;
 import com.ghoul.AmanaFund.DTO.ObjectGDTO;
 import com.ghoul.AmanaFund.entity.ObjectG;
 import com.ghoul.AmanaFund.entity.Person;
+import com.ghoul.AmanaFund.service.DTOObjectMapper;
 import com.ghoul.AmanaFund.service.ObjectGDTOMapper;
 import com.ghoul.AmanaFund.service.ObjectService;
 import com.ghoul.AmanaFund.service.PersonDTOMapper;
@@ -13,6 +14,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -27,9 +30,9 @@ public class ObjectController {
     @Autowired
     private ObjectService objectService;
     @PostMapping("/add_object")
-    public ObjectG addObject(@RequestBody ObjectG objectG)
+    public ObjectG addObject(@RequestBody ObjectGDTO objectGDTO)
     {
-        return objectService.addGObjectG(objectG);
+        return objectService.addDTOObject(objectGDTO);
     }
     @GetMapping("/getall_object")
     public List<ObjectGDTO> GetAllObject()
@@ -68,5 +71,14 @@ public class ObjectController {
         Pageable pageable = PageRequest.of(page, size, sort);
 
         return objectService.getAllPaginated(pageable);
+    }
+    @PutMapping("/{id}/deactivate")
+    public ResponseEntity<ObjectG> deactivatePerson(@PathVariable Long id) {
+        try {
+            ObjectG updatedPolice = objectService.deactivatePerson(id);
+            return new ResponseEntity<>(updatedPolice, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 }

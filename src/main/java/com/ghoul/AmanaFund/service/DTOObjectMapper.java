@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class DTOObjectMapper {
     @Autowired
-    private static PoliceService policeService;
+    private PoliceService policeService;
     public ObjectG apply(ObjectGDTO dto) {
         Police police = policeService.getPoliceById(dto.getPoliceId());
 
