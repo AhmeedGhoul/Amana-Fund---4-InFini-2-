@@ -7,6 +7,7 @@ import com.ghoul.AmanaFund.entity.Police;
 import com.ghoul.AmanaFund.repository.IgarantieRepository;
 import com.ghoul.AmanaFund.repository.IpersonRepository;
 import com.ghoul.AmanaFund.repository.IpoliceRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,10 +31,22 @@ public class PersonService implements IpersonService{
     @Autowired
     private IpoliceRepository policeRepository;
     private final PersonDTOMapper personDTOMapper;
+    private final DTOPersonMapper dtoPersonMapper;
+
     @Autowired
     private IpersonRepository ipersonRepository;
     @Autowired
     private JavaMailSender mailSender;
+
+    public Person deactivatePerson(Long id) {
+        Person person = ipersonRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Person not found with id " + id));
+        if (person.isActive())
+            person.setActive(false);
+        else
+            person.setActive(true);
+        return ipersonRepository.save(person);
+    }
 
     @Override
     public Person addGPerson(Person person) {
@@ -43,10 +56,27 @@ public class PersonService implements IpersonService{
         Person savedPerson = ipersonRepository.save(person);
 
         // Send confirmation email
+        /*sendConfirmationEmail(savedPerson);*/
+
+        return savedPerson;
+    }
+    public Person addDTOPerson(PersonDTO personDTO) {
+        if (personDTO == null) {
+            throw new RuntimeException("PersonDTO should not be null");
+        }
+
+        // Convert DTO to Entity
+        Person person = dtoPersonMapper.apply(personDTO);
+
+        // Save the entity
+        Person savedPerson = ipersonRepository.save(person);
+
+        // Optionally: Send confirmation email
         sendConfirmationEmail(savedPerson);
 
         return savedPerson;
     }
+
 
     private void sendConfirmationEmail(Person person) {
         SimpleMailMessage message = new SimpleMailMessage();
@@ -165,10 +195,14 @@ public class PersonService implements IpersonService{
 
         return totalScore;
     }
-    public PersonDTO findByCIN(String cin) {
-        Person person = ipersonRepository.findByCIN(cin)
-                .orElseThrow(() -> new RuntimeException("Person not found with CIN: " + cin));
-        return personDTOMapper.apply(person);
+    public List<PersonDTO> findByCIN(String cin) {
+        List<Person> persons = ipersonRepository.findAllByCIN(cin);
+        if (persons.isEmpty()) {
+            throw new RuntimeException("No persons found with CIN: " + cin);
+        }
+        return persons.stream()
+                .map(personDTOMapper)
+                .toList();
     }
 
 }

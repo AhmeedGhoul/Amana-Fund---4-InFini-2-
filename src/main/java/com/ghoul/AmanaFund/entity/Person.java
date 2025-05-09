@@ -8,14 +8,16 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Email;
+import lombok.experimental.SuperBuilder;
 import lombok.*;
 
 @Setter
 @Entity
 @Getter
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
+
 public class Person extends Garantie{
 
     @Pattern(regexp = "\\d{8}", message = "CIN must be exactly 8 digits")

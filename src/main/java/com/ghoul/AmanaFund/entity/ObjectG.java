@@ -6,13 +6,14 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.experimental.SuperBuilder;
 
 @Setter
 @Entity
 @Getter
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@SuperBuilder
 public class ObjectG extends Garantie{
     @Column(unique = true, nullable = false)
     @NotNull(message = "Ownership certificate number is required")

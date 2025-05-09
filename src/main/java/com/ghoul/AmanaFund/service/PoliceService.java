@@ -2,6 +2,7 @@ package com.ghoul.AmanaFund.service;
 import com.ghoul.AmanaFund.DTO.PoliceDTO;
 import com.ghoul.AmanaFund.entity.*;
 import com.ghoul.AmanaFund.repository.IpoliceRepository;
+import com.ghoul.AmanaFund.repository.UserRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -27,23 +28,43 @@ import org.springframework.data.domain.Pageable;
 public class PoliceService implements IpoliceService{
 
     private final PoliceDTOMapper policeDTOMapper;
+    private final UserRepository userRepository;
     @Autowired
     private IpoliceRepository ipoliceRepository;
     private final TwilioService twilioService;
 
+    public Police getPoliceById(Long id) {
+        return ipoliceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Police not found with id: " + id));
+    }
+
     @Override
-    public Police addPolice(Police police) {
-        if (police==null)
-            throw new RuntimeException("police should not be null");
+    public Police addPolice(PoliceDTO dto) {
+        if (dto == null) throw new IllegalArgumentException("Police DTO is null");
+
+        Users user = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Police police = new Police();
+        police.setActive(dto.isActive());
+        police.setStart(dto.getStart());
+        police.setEnd(dto.getEnd());
+        police.setAmount(dto.getAmount());
+        police.setFrequency(dto.getFrequency());
+        police.setRenewalDate(dto.getRenewalDate());
+        police.setUser(user);
+
         Police savedPolice = ipoliceRepository.save(police);
         // Ensure user and phone number exist
 
-        String phoneNumber = "+21658413579";
-        String message = "Hello, your insurance policy (ID: " + savedPolice.getIdPolice() +
-                ") has been successfully created. End date: " + savedPolice.getEnd() + ".";
+            String phoneNumber = "+21658413579";
+            String message = "Hello, your insurance policy (ID: " + savedPolice.getIdPolice() +
+                    ") has been successfully created. End date: " + savedPolice.getEnd() + ".";
 
-        // Send SMS
-        /*twilioService.sendSms(phoneNumber, message);*/
+            // Send SMS
+
+
+            twilioService.sendSms(phoneNumber, message);
 
         return savedPolice;
     }
@@ -58,11 +79,27 @@ public class PoliceService implements IpoliceService{
     }
 
     @Override
-    public Police updatePolice(Police police) {
-        if (police==null)
-            throw new RuntimeException("police should not be null");
-        return ipoliceRepository.save(police);
+    public Police updatePolice(PoliceDTO dto) {
+        if (dto == null || dto.getIdPolice() == null)
+            throw new IllegalArgumentException("Police DTO or ID is null");
+
+        Police existingPolice = ipoliceRepository.findById(dto.getIdPolice())
+                .orElseThrow(() -> new RuntimeException("Police not found"));
+
+        Users user = userRepository.findById(dto.getUserId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        existingPolice.setActive(dto.isActive());
+        existingPolice.setStart(dto.getStart());
+        existingPolice.setEnd(dto.getEnd());
+        existingPolice.setAmount(dto.getAmount());
+        existingPolice.setFrequency(dto.getFrequency());
+        existingPolice.setRenewalDate(dto.getRenewalDate());
+        existingPolice.setUser(user);
+
+        return ipoliceRepository.save(existingPolice);
     }
+
     @Override
     public Police deactivatePolice(Long id) {
         Police police = ipoliceRepository.findById(id)
@@ -95,6 +132,13 @@ public class PoliceService implements IpoliceService{
 
         return (activeCount * 100.0) / allPolices.size();
     }
+    public double getTotalPoliceAmount() {
+        List<Police> allPolices = ipoliceRepository.findAll();
+        return allPolices.stream()
+                .mapToDouble(Police::getAmount)
+                .sum();
+    }
+
     public double calculateGuaranteedAmount(Long policeId) {
         Optional<Police> policeOptional = ipoliceRepository.findById(policeId);
 

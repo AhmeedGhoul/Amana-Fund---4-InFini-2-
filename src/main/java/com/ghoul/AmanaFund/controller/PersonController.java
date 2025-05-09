@@ -13,6 +13,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
@@ -27,12 +29,20 @@ public class PersonController {
     private final PersonDTOMapper personDTOMapper;
     @Autowired
     private PersonService personService;
-    @PostMapping("/add_person")
-    public Person addPerson(@RequestBody Person person)
+    @PostMapping("/add_personG")
+    public Person addPerson(@RequestBody PersonDTO person)
     {
         if (person==null)
             throw new RuntimeException("Person should have value");
-        return personService.addGPerson(person);
+        return personService.addDTOPerson(person);
+    }
+    @PutMapping("/update_person")
+    public PersonDTO updatePerson(@RequestBody PersonDTO personDTO) {
+        if (personDTO == null) {
+            throw new RuntimeException("Person should have value");
+        }
+        Person updatedPerson = personService.updatePersonFromDTO(personDTO);
+        return personDTOMapper.apply(updatedPerson);
     }
     @GetMapping("/getall_person")
     public List<PersonDTO> GetAllPerson()
@@ -47,22 +57,25 @@ public class PersonController {
     public double getPersonScoreById(@PathVariable Long id) {
         return personService.calculatePersonScoreById(id);
     }
-    @PutMapping("/update_person")
-    public PersonDTO updatePerson(@RequestBody PersonDTO personDTO) {
-        if (personDTO == null) {
-            throw new RuntimeException("Person should have value");
-        }
-        Person updatedPerson = personService.updatePersonFromDTO(personDTO);
-        return personDTOMapper.apply(updatedPerson);
-    }
+
     @GetMapping("/search-by-cin")
-    public PersonDTO searchPersonByCIN(@RequestParam String cin) {
+    public List<PersonDTO> searchPersonByCIN(@RequestParam String cin) {
         return personService.findByCIN(cin);
     }
 
     @DeleteMapping("/remove_person/{id}")
     public void removePerson(@PathVariable long id) {
         personService.removePerson(id);
+    }
+
+    @PutMapping("/{id}/deactivate")
+    public ResponseEntity<Person> deactivatePerson(@PathVariable Long id) {
+        try {
+            Person updatedPolice = personService.deactivatePerson(id);
+            return new ResponseEntity<>(updatedPolice, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
     @GetMapping("/paginated")
     public Page<PersonDTO> getPaginatedPerson(

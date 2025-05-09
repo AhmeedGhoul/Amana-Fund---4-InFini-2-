@@ -2,6 +2,7 @@ package com.ghoul.AmanaFund.service;
 
 import com.ghoul.AmanaFund.DTO.ObjectGDTO;
 import com.ghoul.AmanaFund.entity.ObjectG;
+import com.ghoul.AmanaFund.entity.Person;
 import com.ghoul.AmanaFund.entity.Police;
 import com.ghoul.AmanaFund.repository.IobjectRepository;
 import com.ghoul.AmanaFund.repository.IpoliceRepository;
@@ -20,6 +21,8 @@ public class ObjectService implements IobjectService{
     @Autowired
     private IpoliceRepository policeRepository;
     private final ObjectGDTOMapper objectGDTOMapper;
+    private final DTOObjectMapper dtoObjectMapper;
+
     @Autowired
     private IobjectRepository iobjectRepository;
     @Override
@@ -36,7 +39,23 @@ public class ObjectService implements IobjectService{
                 .collect(Collectors.toList())
                 ;
     }
+    public ObjectG deactivatePerson(Long id) {
+        ObjectG person = iobjectRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Object not found with id " + id));
+        if (person.isActive())
+            person.setActive(false);
+        else
+            person.setActive(true);
+        return iobjectRepository.save(person);
+    }
+    public ObjectG addDTOObject(ObjectGDTO objectGDTO) {
+        if (objectGDTO == null) {
+            throw new RuntimeException("ObjectGDTO should not be null");
+        }
 
+        ObjectG objectG = dtoObjectMapper.apply(objectGDTO);
+        return iobjectRepository.save(objectG);
+    }
     @Override
     public ObjectG updateObjectGFromDTO(ObjectGDTO dto) {
         ObjectG objectG = iobjectRepository.findById(dto.getIdGarantie())
