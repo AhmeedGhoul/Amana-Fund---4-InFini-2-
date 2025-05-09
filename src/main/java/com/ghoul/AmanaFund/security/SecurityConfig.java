@@ -79,7 +79,9 @@ public class SecurityConfig {
                                 "/Payment/**",
                                 "/Police/**",
                                 "/Sinistre/**",
-                                "/CreditPool/**"
+                                "/contracts/**",
+                                "/creditpool/**",
+                                "/payments/**"
                         ).hasRole("ADMIN")
 
                         // AGENT-only secured endpoints
@@ -88,7 +90,6 @@ public class SecurityConfig {
                                 "/account-payments/**",
                                 "/Contract/**",
                                 "/Object/**",
-                                "/contracts/**",
                                 "/Person/**",
                                 "/Sinitre/**"
                         ).hasRole("AGENT")

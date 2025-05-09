@@ -135,6 +135,7 @@ public class    AuthenticationService {
             var jwtToken = jwtService.generateToken(claims, user);
             savedToken.setValidatedAt(LocalDateTime.now());
             tokenRepository.save(savedToken);
+            System.out.println("Activated account successfully");
             return AuthenticationResponse.builder()
                     .token(jwtToken)
                     .build();

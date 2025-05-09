@@ -128,15 +128,12 @@ public class AuthenticationController {
 
     @GetMapping("/F2A")
     public ResponseEntity<AuthenticationResponse> verify2FACode(@RequestParam String token) throws MessagingException {
-        try {
             AuthenticationResponse response = authService.activateAccount(token);
             Users user = extractUser(response.getToken());
             notificationService.notifyPendingFraudCases(user);
 
             return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new AuthenticationResponse("Invalid 2FA code or expired token"));
-        }
+
     }
 
 
