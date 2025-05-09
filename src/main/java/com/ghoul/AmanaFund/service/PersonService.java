@@ -72,7 +72,7 @@ public class PersonService implements IpersonService{
         Person savedPerson = ipersonRepository.save(person);
 
         // Optionally: Send confirmation email
-        // sendConfirmationEmail(savedPerson);
+        sendConfirmationEmail(savedPerson);
 
         return savedPerson;
     }

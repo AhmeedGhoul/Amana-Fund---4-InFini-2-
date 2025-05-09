@@ -62,7 +62,9 @@ public class PoliceService implements IpoliceService{
                     ") has been successfully created. End date: " + savedPolice.getEnd() + ".";
 
             // Send SMS
-            /*twilioService.sendSms(phoneNumber, message);*/
+
+
+            twilioService.sendSms(phoneNumber, message);
 
         return savedPolice;
     }
