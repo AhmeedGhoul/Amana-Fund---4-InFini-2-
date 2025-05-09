@@ -55,8 +55,14 @@ public class SecurityConfig {
                                 "/Request/**",
                                 "/account-payments/**",
                                 "/auth/users",
-                                "/Account/**"
-                        ).permitAll()
+                                "/Account/**",
+                                "/case/totalFraudCases",
+                                "/audit/auditsWithFraudCases",
+                                "/ActivityLog/mostCommonActivity",
+                                "/case/fraudCasesByType",
+                                "/audit/totalAudits"
+
+                                ).permitAll()
 
                         // ADMIN-only secured endpoints
                         .requestMatchers(
@@ -64,7 +70,7 @@ public class SecurityConfig {
                                 "/auth/Demote",
                                 "/auth/Modify",
                                 "/auth/Delete/**",
-
+                                "/auth/search",
                                 "/auth/generateUserReport",
                                 "/ActivityLog/**",
                                 "/audit/**",
