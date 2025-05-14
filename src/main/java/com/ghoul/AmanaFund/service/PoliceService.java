@@ -64,7 +64,7 @@ public class PoliceService implements IpoliceService{
             // Send SMS
 
 
-            twilioService.sendSms(phoneNumber, message);
+//            twilioService.sendSms(phoneNumber, message);
 
         return savedPolice;
     }
