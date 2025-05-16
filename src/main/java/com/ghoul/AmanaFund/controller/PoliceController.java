@@ -156,26 +156,18 @@ public class PoliceController {
             return ResponseEntity.notFound().build();
         }
 
-        InputStream signatureImageStream = null;
-        try {
-            // Example: Loading from classpath
-            ClassPathResource resource = new ClassPathResource("signatures/signature.png"); // Adjust path
-            if (resource.exists()) {
-                signatureImageStream = resource.getInputStream();
-            }
+        try (InputStream signatureStream = new ClassPathResource("signatures/sig.png").getInputStream();
+             InputStream logoStream = new ClassPathResource("signatures/logo.png").getInputStream()) {
 
-            byte[] pdfBytes = pdFpoliceService.generatePoliceContract(policeOpt.get(), signatureImageStream);
+            byte[] pdfBytes = pdFpoliceService.generatePoliceContract(policeOpt.get(), signatureStream, logoStream);
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=contract_" + id + ".pdf")
                     .contentType(MediaType.APPLICATION_PDF)
                     .body(pdfBytes);
-        } finally {
-            if (signatureImageStream != null) {
-                signatureImageStream.close();
-            }
         }
     }
+
     @GetMapping("/{id}/total-amount-paid")
     public Double getTotalAmountPaid(@PathVariable Long id) {
         return policeService.calculateTotalAmountPaid(id);
