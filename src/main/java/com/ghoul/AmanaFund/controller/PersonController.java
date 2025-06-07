@@ -115,7 +115,7 @@ public class PersonController {
             if (mimeType == null) mimeType = "application/pdf";
 
             // Remove X-Frame-Options header for this response
-/*            response.setHeader("X-Frame-Options", "");*/
+           // response.setHeader("X-Frame-Options", "");
 
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(mimeType))
